@@ -6,7 +6,8 @@ A platonic matchmaking web app for Applied Science University students to sync s
 Week 2 — Brief and rules written, no code yet.
 
 ## **Docs:** 
-See the `docs/` folder — starting with `brief.md`.
+See the [docs/ folder](docs/) — starting with the [Project Brief](docs/brief.md), [Competitive Research](docs/research.md), and [Development Workflow](docs/workflow.md).
+
 
 ## Context
 Built during the IEEE WIE JS Mentorship Program 2026, AI & Programming track.
