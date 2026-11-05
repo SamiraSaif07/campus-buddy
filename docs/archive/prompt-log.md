@@ -1,3 +1,5 @@
+Superseded by brief.md — kept for history.
+
 # Prompt Log (v1 to v4 Evolution)
 
 ### Version 1 (v1): The Naive Idea

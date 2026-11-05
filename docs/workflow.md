@@ -32,6 +32,6 @@
   * **Data:** Powered by a local data file schema or a free local database instance populated with a subset of fake profiles.
   * **Rule:** Local runtime variables must never reference production endpoints or point to live operational infrastructure assets.
 * `production`: The live web app architecture accessible via your public demo link.
-  * **Data:** Seeded exclusively with the 20 structured mock student profiles modeling realistic ASU computer science majors, class blocks, and landmark selections to guarantee functional swiping on Demo Night.
+  * **Data:** Seeded exclusively with the 20 structured mock student profiles modeling realistic, diverse ASU majors, class blocks, and landmark selections to guarantee functional swiping on Demo Night.
   * **Secrets Management:** Sensitive identifiers, local port metrics, and API variables must live securely inside an isolated local `.env` configuration file. The actual `.env` file is explicitly added to the `.gitignore` asset file to guarantee it is never committed to public GitHub history. A harmless, value-free `.env.example` template file will be committed to the repository to track necessary keys.
   * **Deployment Trigger:** Deployments to production occur strictly through explicit Git Release Tags (e.g., merging code to `main` accumulates verified stability, and pushing a tag like `v0.2.0` updates the public live deployment link).

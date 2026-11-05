@@ -29,4 +29,4 @@
 
 ## Why Anyone Would Use Campus Buddy Instead
 
-Campus Buddy is the only option that pairs Bumble BFF's platonic card-swipe mechanics with a strict `@students.asu.edu.jo` email authorization gate, block-based timetable overlap scoring, and fixed ASU landmark meeting points, so every mutual match arrives with a verified campus identity, a shared free window, and a place to meet, eliminating the early-stage chat fatigue that WhatsApp groups and general-purpose swipe apps create.
+Campus Buddy is the only option that pairs Bumble BFF's platonic card-swipe mechanics with an ASU-email-gated sign-in (`@students.asu.edu.jo`), block-based timetable overlap scoring, and fixed ASU landmark meeting points, so every mutual match arrives with a shared free window and a place to meet, eliminating the early-stage chat fatigue that WhatsApp groups and general-purpose swipe apps create.

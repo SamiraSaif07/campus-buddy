@@ -1,3 +1,5 @@
+Superseded by brief.md — kept for history.
+
 # Scope Block
 
 ### The Size of the Job

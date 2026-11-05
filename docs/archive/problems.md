@@ -1,3 +1,5 @@
+Superseded by brief.md — kept for history.
+
 # Three Candidate Problems
 
 ### 1. The Campus Social Isolation Gap at ASU (Selected)
