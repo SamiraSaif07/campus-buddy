@@ -3,7 +3,7 @@
 ## 1. Team & Project Bounding
 * **The Team:** A solitary developer managing all engineering tasks.
 * **The AI Collaborator (Claude Pro):** Acts strictly as a junior coding partner. Claude is permitted to write features on `feature/*` branches, edit documentation files, and generate code snippets. Claude is strictly forbidden from pushing directly to `main` or merging its own Pull Requests.
-* **Definition of Done:** A ticket or feature is considered "Done" only when it builds locally without console errors, passes responsive styling inspection at a simulated mobile layout width, is committed with a verified semantic message, and is successfully integrated into the stable `main` branch.
+* **Definition of Done:** A ticket or feature is considered "Done" only when it builds locally without console errors, passes responsive styling inspection at a simulated mobile layout width, passes all automated backend checks via `node --test`, is committed with a verified semantic message, and is successfully integrated into the stable `main` branch.
 
 ## 2. Branching Strategy
 * `main`: Always deployable, stable, and running. Never commit code directly to `main`. *Exception:* Setting up the initial repository structure, updating the top-level project `README.md`, or patching immediate text layout bugs in `/docs` markdown files is allowed directly on `main`.
@@ -29,7 +29,7 @@
 
 ## 5. Environment Boundaries & Data Routing
 * `dev`: Local runtime workspace executing inside VS Code.
-  * **Data:** Powered by a local data file schema or a free local database instance populated with a subset of fake profiles.
+  * **Data:** Powered by an isolated, separate Neon development project database instance populated with a subset of fake profiles via connection strings stored in a local .env file.
   * **Rule:** Local runtime variables must never reference production endpoints or point to live operational infrastructure assets.
 * `production`: The live web app architecture accessible via your public demo link.
   * **Data:** Seeded exclusively with the 20 structured mock student profiles modeling realistic, diverse ASU majors, class blocks, and landmark selections to guarantee functional swiping on Demo Night.

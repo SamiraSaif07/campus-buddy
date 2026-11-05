@@ -150,3 +150,9 @@ Superseded by the 2026-11-05 server-side URL check entry.
 * **Decision:** The simulated Vision check is a server-side check of the URL text only: it must use `https` and end in `.jpg`, `.jpeg`, `.png`, or `.webp`. It never inspects the image and returns a specific rejection reason.
 * **Rejection:** Rejected a client-side check, and rejected a real image model.
 * **Consequence:** The browser cannot skip the check, but the R4 3-strike lockout stays in the browser and resets on refresh, as accepted in `architecture.md`.
+
+## 2026-11-05 — Stack Chosen
+* **Context:** The architecture needed concrete tools that fit a solo 8-week build and a zero-cost budget.
+* **Decision:** Vanilla HTML/CSS/JS frontend, Node + Express backend serving the frontend and API from one Render free web service, PostgreSQL on Neon's free plan with a separate Neon project for dev, `pg` with parameterized queries, `dotenv`, and `node --test` for R7 and N3. Render auto-deploy is off; production deploys run through a deploy hook after a Git release tag.
+* **Rejection:** Rejected React or another frontend framework, an ORM, MongoDB or Firebase, and Render's free Postgres (expires after 30 days, deleted 14 days later).
+* **Consequence:** No build step and one deploy target. The Render cold start is recorded as Risk 8 in `brief.md`. Full details and rejections are in `stack.md`.

@@ -24,13 +24,13 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 * `created_at`: UTC timestamp.
 
 ## View Log (`daily_view_logs`)
-* `id`: unique text identifier.
+* `id`: cryptographically random alphanumeric string with the prefix `LOG_`.
 * `user_id`: the Student who swiped.
 * `viewed_profile_id`: the Student whose card was swiped.
 * `viewed_at`: UTC timestamp of the swipe.
 
 ## Swipe (`swipes`)
-* `id`: unique text identifier.
+* `id`: cryptographically random alphanumeric string with the prefix `SWP_`.
 * `swiper_id`: the Student who swiped.
 * `target_id`: the Student whose card was swiped.
 * `direction`: `like` or `pass`.
