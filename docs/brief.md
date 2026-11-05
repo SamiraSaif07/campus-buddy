@@ -34,11 +34,11 @@ On Demo Night, a user can:
 * See the app switch between Pending vs Verified State UI views, then be routed by account status: a new email continues to profile setup (Screen 2), while a recognized email goes straight to the swipe deck (Screen 3) with the existing profile intact and no duplicate account.
 * Return later on the same browser without signing in again, because the session is kept in browser LocalStorage.
 * Build a profile with a main photo and optional mood photos supplied as text URL strings pointing to public images, alongside major, academic year, buddy preference, interest tags, preferred ASU landmark, optional Instagram and Discord handles, and weekly free blocks.
-* View a daily deck of student profile cards ordered by schedule overlap, each showing first name, photos, major, academic year, buddy preference (Study, Hangout, or Both), up to 5 interest tags, overlap score, and preferred ASU landmark.
+* View a daily deck of unswiped student profile cards ordered by schedule overlap, each showing first name, photos, major, academic year, buddy preference (Study, Hangout, or Both), up to 5 interest tags, overlap score, and preferred ASU landmark.
 * Swipe right (like) or left (pass), and on a mutual right-swipe, instantly see the other student's full name, major, academic year, Instagram and Discord handles, and a WhatsApp link on a dedicated "Match Revealed" screen.
 * Reopen any earlier match at any time from the toggleable "Matches Drawer" on the swipe deck, which lists each match's first name with a WhatsApp action button.
 
-**Demo data:** The database will be pre-seeded with 20 mock profile records covering diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs. This bypasses the cold-start problem so the swipe deck, overlap scores, and match flow are fully demonstrable during the live Demo Night presentation.
+**Demo data:** The database will be pre-seeded with 20 mock profile records covering diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs, plus likes from selected mock profiles to the demo account. This bypasses the cold-start problem so the swipe deck, overlap scores, and match flow are fully demonstrable during the live Demo Night presentation.
 
 ### Measures
 
@@ -66,7 +66,7 @@ On Demo Night, a user can:
   * Each profile stores one main photo and up to 4 optional mood photos as text URL strings pointing to publicly hosted images.
   * The app stores and renders the URL only. No image file is uploaded, stored, or hosted by Campus Buddy, so image hosting costs are zero.
   * Every submitted or edited photo URL passes a simulated Vision validation check before the profile can be saved, with a limit of 3 consecutive failed submissions per session.
-* **Profile data:** required Full Name, Major, Academic Year, Buddy Preference, WhatsApp number, and main photo URL; optional Gender, MBTI, Birthdate, up to 5 interest tags, preferred ASU landmark, mood photo URLs, and social handles.
+* **Profile data:** required First Name, Last Name, Major, Academic Year, Buddy Preference, WhatsApp number (international format), and main photo URL; optional Gender, MBTI, Birthdate (month and day only), up to 5 interest tags, preferred ASU landmark, mood photo URLs, and social handles.
 * **Social handles:** limited strictly to Instagram and Discord handles. No other social platforms are collected or displayed.
 * **Profile editing:** users can return from the swipe deck to Screen 2 to edit their saved profile.
 * **Daily discovery cap:** exactly 15 student profile cards per user per calendar day, counted from a log of viewed cards, to protect database health and give users a reason to return.
@@ -75,7 +75,7 @@ On Demo Night, a user can:
 * **Birthday tag:** a "B-DAY TODAY!!" tag on cards whose birthdate matches the current day, without showing the date or age.
 * **Zero-chat match gateway:** contact details stay locked until a mutual right-swipe, then surface immediately on the "Match Revealed" screen (Screen 4): full name, major, academic year, Instagram and Discord handles, and a WhatsApp link.
 * **Matches Drawer (Screen 3):** a toggleable drawer on the swipe deck that stores and lists every mutual match with first name and a WhatsApp action button, available even after the daily cap is reached.
-* **Seed data:** 20 pre-seeded mock profiles for development and Demo Night.
+* **Seed data:** 20 pre-seeded mock profiles for development and Demo Night, plus seeded likes from selected mock profiles to the demo account so a mutual match can happen live.
 
 ### Out of scope
 
@@ -91,6 +91,7 @@ On Demo Night, a user can:
 * Unlimited profile swiping.
 * Multi-campus deployment or cross-university database indexing.
 * Native iOS or Android mobile application builds.
+* Student account deletion or phone number removal. The honest reason is simplicity for a solo 8-week project.
 
 ### Constraints
 
@@ -105,8 +106,8 @@ On Demo Night, a user can:
 | :- | :--- | :--- | :--- |
 | 1 | Scope creep on the verification flow | Building automated email systems, document scanners, or an admin review dashboard would break the 8-week timeline. | Simulated registration string code verification with the exact email format check, a 6-digit mock code, and Pending vs Verified State UI views in local frontend state. Real verification is deferred until after the MVP. |
 | 2 | Database strain from heavy usage | Uncapped swiping can exhaust free-tier database reads and writes during peak campus hours. | Enforce the 15-card daily cap at the query layer by counting the user's viewed-card records for the current calendar date. |
-| 3 | Empty deck on Demo Night (cold start) | With no real users, the swipe deck, overlap scores, and match flow would have nothing to show. | Pre-seed 20 mock profiles with diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs. |
+| 3 | Empty deck on Demo Night (cold start) | With no real users, the swipe deck, overlap scores, and match flow would have nothing to show. | Pre-seed 20 mock profiles with diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs, plus likes to the demo account so a mutual match can be shown live. |
 | 4 | User hesitation to move to external apps | Introverted users may feel friction when leaving the platform to message someone on WhatsApp. | Use the profile structure to state explicit intent up front (e.g., "Java OOP study group at the IT lab," "morning coffee chat with someone from the AI majors"), giving students a clear reason to text. |
 | 5 | Externally hosted photo URLs | Campus Buddy does not control the image behind a URL: it can break, change, or be replaced with inappropriate content after the profile is saved. | Validate each URL with the simulated Vision check on every submit or edit; accept that later changes to the external image are not re-checked in the MVP. |
 | 6 | Data architecture scalability | Hard-coding campus parameters too early could make expanding to other universities difficult later. | Build ASU landmarks and schedule blocks as modular arrays in the data schema so they can accept new university inputs post-MVP. |
-| 7 | Mock Security Gate Vulnerability in MVP | Because a single mock 6-digit verification code string is used to bypass SMTP server building overhead, any user could theoretically input a peer's ASU email to view their matches' WhatsApp link details. | Accepted as a standard, calculated risk for a simulated demo day prototype. Production versions post-MVP will implement true independent SMTP closed-loop verification servers. |
+| 7 | Mock Security & LocalStorage Vulnerability | Anyone could theoretically insert a student alphanumeric ID string directly into browser LocalStorage to spoof an active session block. Because a single shared mock 6-digit code replaces SMTP verification, anyone could also sign in with a peer's ASU email and view their matches' WhatsApp links. | Accepted as a standard prototype limitation for our solo zero-budget timeline. Student IDs are cryptographically random and unguessable. Production versions post-MVP will implement true independent SMTP closed-loop verification servers. |
