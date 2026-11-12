@@ -156,3 +156,34 @@ Superseded by the 2026-11-05 server-side URL check entry.
 * **Decision:** Vanilla HTML/CSS/JS frontend, Node + Express backend serving the frontend and API from one Render free web service, PostgreSQL on Neon's free plan with a separate Neon project for dev, `pg` with parameterized queries, `dotenv`, and `node --test` for R7 and N3. Render auto-deploy is off; production deploys run through a deploy hook after a Git release tag.
 * **Rejection:** Rejected React or another frontend framework, an ORM, MongoDB or Firebase, and Render's free Postgres (expires after 30 days, deleted 14 days later).
 * **Consequence:** No build step and one deploy target. The Render cold start is recorded as Risk 8 in `brief.md`. Full details and rejections are in `stack.md`.
+
+## 2026-11-12 — Mock Verification Code Stored in `.env`
+* **Context:** R2 uses one shared 6-digit mock code, but no file said where the code lives.
+* **Decision:** The code is a server-side `.env` variable, `MOCK_VERIFICATION_CODE`. It is never stored in the database.
+* **Rejection:** Rejected storing the code in the database and rejected hard-coding it in source files.
+* **Consequence:** `.env.example` lists `MOCK_VERIFICATION_CODE` with no value. The code can differ between dev and production.
+
+## 2026-11-12 — Demo Account Is One of the 20 Seeded Profiles
+* **Context:** `data-model.md` referred to "the demo account's `id`" without saying whether it was one of the 20 seeded profiles or an extra row.
+* **Decision:** The demo account is one of the 20 seeded Students, `samira.sweidan@students.asu.edu.jo`. Other seeded profiles hold the pre-seeded `like` swipes aimed at it.
+* **Rejection:** Rejected a 21st profile outside the seed.
+* **Consequence:** The database holds exactly 20 profiles, matching N2. The demo account's own deck has 19 candidates.
+
+## 2026-11-12 — Student Row Created on First Save of Screen 2
+* **Context:** If the Student row were created on Screen 1, a student who quit before saving their profile would be "recognized" next time (R12) and sent to the deck with an empty profile.
+* **Decision:** The Student row and its `id` are created on the first successful save of Screen 2. Until then, the email stays in frontend state and LocalStorage stays empty.
+* **Rejection:** Rejected creating the row when the code is verified on Screen 1.
+* **Consequence:** Every stored Student has all seven required fields. A student who leaves before saving starts again as a new user.
+
+## 2026-11-12 — Design Choices Accepted (`design.md`)
+* **Context:** Writing `design.md` forced decisions that no earlier file had made.
+* **Decision:** Accepted all seven:
+  * The Student row is created on the first save of Screen 2 (see the entry above).
+  * Screen 3 has a top bar with a Matches button showing a count badge, and an Edit profile button.
+  * A rejected duplicate swipe (N7) is skipped silently, with no error shown.
+  * A photo URL that fails to load shows a grey box with the student's first-name initial; the rest of the card renders normally.
+  * Gender and MBTI default to blank ("Prefer not to say"); MBTI is a picker of the 16 types; interest tags are typed and added with Enter.
+  * The schedule grid shows a "N free blocks selected" counter.
+  * The on-screen wording for empty, loading and error states is as written in `design.md`.
+* **Rejection:** Rejected showing an error for a duplicate swipe, and rejected a broken-image icon in place of the initial fallback.
+* **Consequence:** `design.md` is the reference for every screen ticket in `docs/tickets/`.

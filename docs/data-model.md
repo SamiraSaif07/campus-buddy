@@ -41,6 +41,7 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 * A Match exists between Student A and Student B when a `like` Swipe exists from A to B and a `like` Swipe exists from B to A. The Matches Drawer (R13) and the Match Revealed screen (R11) both read Matches this way.
 
 ## Rules
+* A Student row and its `id` are created on the first successful save of Screen 2, using the email carried from Screen 1 in frontend state. Before that, nothing is stored and LocalStorage stays empty.
 * A View Log row is written at the moment a card is swiped, left or right. Showing a card writes nothing.
 * A Student can swipe a given target at most once: one Swipe per (`swiper_id`, `target_id`) pair.
 * The deck for a Student excludes their own `id` and every `target_id` they have already swiped. When no candidates remain, the deck shows the Deck Exhausted state.
@@ -51,7 +52,8 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 ## Not stored
 * Verification status: local frontend state only (R2).
 * Photo validation attempts and the 15-minute lockout: local frontend session only (R4).
-* Session: held in browser LocalStorage as `{"asu_matcher_student_id": "STU_XXXXX"}`. The browser stores the student's `id` directly for passwordless persistence.
+* Session: held in browser LocalStorage as `{"asu_matcher_student_id": "STU_XXXXX"}`. The browser stores the student's `id` directly for passwordless persistence. Empty until the first save of Screen 2.
+* Mock verification code: server-side `.env` variable `MOCK_VERIFICATION_CODE`. Never stored in the database.
 * Overlap Score: computed at query time.
 * Matches: derived from Swipes.
 
@@ -63,5 +65,5 @@ Kept as static configuration arrays in one shared place, so new universities can
 * Major Suggestions (frontend only, offline; suggestions, not a restriction): ['Computer Science', 'Software Engineering', 'Cybersecurity', 'Artificial Intelligence', 'Computer Information Systems', 'Civil Engineering', 'Electrical Engineering', 'Mechanical Engineering', 'Architecture', 'Pharmacy', 'Nursing', 'Accounting', 'Business Administration', 'Marketing', 'Law', 'English Language and Literature', 'Graphic Design', 'Interior Design']
 
 ## Demo seed (N2)
-* 20 Student rows covering diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs.
-* Seeded Swipe rows in which selected mock profiles have already sent a `like` to the demo account's `id`, so a right-swipe on one of them produces a mutual match live on Demo Night.
+* 20 Student rows covering diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs. One of the 20 is the demo account, `samira.sweidan@students.asu.edu.jo`.
+* Seeded Swipe rows in which selected other seeded profiles have already sent a `like` to the demo account's `id`, so a right-swipe on one of them produces a mutual match live on Demo Night.
