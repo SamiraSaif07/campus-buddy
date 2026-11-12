@@ -1,6 +1,6 @@
-# Progress — Week 3
+# Progress — Week 4
 
-* **Done:** `brief.md`, `research.md`, `workflow.md`, `requirements.md`, `screens.md`, `data-model.md`, `architecture.md`, `stack.md`, `rules.md`, `decisions.md`, repository public link setup.
-* **Doing:** `plan.md`
-* **Next:** fresh-chat test.
+* **Done:** `design.md` (all 4 states per screen), updated `data-model.md` and `decisions.md`, 12 numbered tickets in `docs/tickets/` with `README.md`, pushed to GitHub.
+* **Doing:** Reviewing Ticket 01 (`01-project-skeleton.md`) ahead of Session 5.
+* **Next:** Building the project skeleton and database tables on feature branches (Session 5).
 * **Blocked:** Nothing.
