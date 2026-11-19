@@ -1,34 +1,43 @@
 # Screens
 
-All interfaces are designed as a responsive web application layout optimized mobile-first for clean presentation viewports.
+Five screens. Mobile-first: one column, designed for a 390–420px phone width. On a laptop the app sits in a centered phone-width column. Full layouts and the four states of each screen are in `design.md`.
 
 ### 1. Screen 1: Registration & Sign-In Gateway
-* Purpose: Unified landing portal to onboard new users and authenticate returning users.
-* UI Elements: Email text entry field, mock 6-digit verification code text box, error banner, and Pending vs Verified state views toggled by local state. After a verified code, a new email routes to Screen 2 and a recognized email routes directly to Screen 3. Returning sessions are saved via browser LocalStorage tokens to bypass this gateway entirely.
+* Purpose: one entry point for new and returning students.
+* UI Elements: Email field, community pledge line ("Strictly for platonic study buddies and campus friends at ASU."), 6-digit mock code field, error banner, Pending vs Verified views held in local state. A new email routes to Screen 2; a recognized email routes to Screen 3. A saved LocalStorage session skips this screen.
 * Requirements Served: R1, R2, R12
 
 ### 2. Screen 2: The 'Me' Profile Suite & Schedule Panel
-* Purpose: Account setup and data configuration workspace.
-* UI Elements: Main photo URL text input, up to 4 optional mood photo URL fields, optional Instagram and Discord handle inputs, a 3-strike URL validation failure alert banner with a 15-minute countdown timer, First Name and Last Name text boxes, Major free-text input field with client-side auto-suggestions drawn from a hardcoded frontend suggestion array (fully offline; no server lookup), Academic Year select list, Buddy Preference toggle (Study/Hangout/Both), WhatsApp number input (international format, e.g., 9627XXXXXXXX), optional selectors (Gender, MBTI, Birthday as month and day), up to 5 interest tags, a preferred ASU landmark dropdown selection, and the 5x5 interactive schedule checkbox grid (Sunday-Thursday, 5 standard lecture blocks). Features a persistent "Save Profile" action button. Editing a saved photo URL re-runs the validation check before saving.
-* Requirements Served: R3, R4, R5, R6, N5, N6
+* Purpose: create the profile on first visit; edit it later.
+* UI Elements: main photo URL; 3 extra photo URL slots (1 required); 3-strike photo check banner with 15-minute countdown; First and Last Name; Major free-text field with offline suggestions; Academic Year select; Gender select; Gender Preference toggle (own gender only, the default, or Both); Buddy Preference toggle (Study/Hangout/Both); WhatsApp number (international format); 3 prompt slots, each a prompt picker from `prompts.md` plus a 150-character answer box (1 required); optional MBTI, Birthday (month and day), up to 5 interest tags, preferred ASU landmark, Instagram and Discord; the 5×5 free-block grid (Sun–Thu) with a counter; a fixed "Save Profile" button.
+* Requirements Served: R3, R4, R5, R6, R15, N5, N6, N8
 
 ### 3. Screen 3: The Main Swipe Deck
-* Purpose: Core profile exploration loop showing potential campus matches.
-* UI Elements: Viewport rendering 1 candidate card at a time. The card displays: First Name, photo URLs, Major, Academic Year, Gender, Buddy Preference, interest tags, MBTI, preferred ASU landmark, an Overlap Score Badge (e.g., "3 matching windows"), and a conditional "🍰 B-DAY TODAY!!" banner. Controls feature Left (pass) and Right (like) swipe buttons. A persistent navigation button allows users to return to Screen 2 to edit profile settings. A toggleable "Matches Drawer" lists the First Name and a direct WhatsApp action button for every mutual match, and stays available in both blocking states below.
+* Purpose: discover buddies one card at a time.
+* UI Elements: top bar with "Me" (to Screen 2), the app name, and "Buddies" with a count badge (to Screen 5). One card at a time.
+  * Front: main photo, first name with the "🍰 B-DAY TODAY!!" tag when it applies, Overlap Score badge (or the R8 notice), Major, Academic Year, Buddy Preference.
+  * Back (in-place flip): 3 extra photo slots down the left (empty slots as warm-neutral placeholders), 1–3 prompts and answers beside them, interest tags, MBTI, preferred landmark.
+  * Controls: Pass (✕), Like (♥), and a flip button.
 * Blocking states:
-  * "Daily Cap Reached": shown when the user has swiped 15 cards on the current Asia/Amman calendar date.
-  * "Deck Exhausted": shown when no unswiped candidates remain, regardless of the daily count.
-* Requirements Served: R7, R8, R9, R10, R13, N3, N4, N5, N7
+  * "Daily Cap Reached": shown after 15 swipes on the current Asia/Amman date.
+  * "Deck Exhausted": shown when no unswiped candidates remain.
+  * The Buddies button works in both.
+* Requirements Served: R7, R8, R9, R10, R14, R15, N3, N4, N5, N7
 
-### 4. Screen 4: The 'Match Revealed' Screen Gateway
-* Purpose: Post-match secure communication portal rendered only upon a mutual right-swipe.
-* UI Elements: Confirmation modal listing the match's First Name, Last Name, Major, Academic Year, Instagram handle, and Discord handle, with a direct click-to-open WhatsApp action button.
-* Requirements Served: R11, N1
+### 4. Screen 4: The 'Match Revealed' Modal
+* Purpose: celebrate a mutual match and hand off to WhatsApp.
+* UI Elements: modal over Screen 3 (or Screen 5) with "It's a match!" heading, main photo, First and Last Name, Major, Academic Year, Instagram and Discord (if present), "Open WhatsApp" button, "See their card" control (shows the card back), and "Continue matching" (or "Back to Buddies" when opened from Screen 5).
+* Requirements Served: R11, N1, N4
+
+### 5. Screen 5: History Buddies
+* Purpose: every match in one place, so a contact is never lost.
+* UI Elements: top bar with a back arrow to Screen 3 and the title "Your buddies"; a scrollable list, newest first. Each row: main photo thumbnail, full name and major on the left; WhatsApp, Instagram and Discord buttons on the right. Tapping a row reopens Screen 4 for that buddy.
+* Requirements Served: R13, R11, N4
 
 ---
 
 ## Data-Only Specifications
-* Pre-seeded Profiles and Likes (N2): Executed as a backend database seed only, including mock profiles that have already liked the demo account. Contains no student-facing user interface or screens.
+* Pre-seeded Profiles and Likes (N2): a backend database seed of 20 profiles, including the demo account (`demo.student@students.asu.edu.jo`) and profiles that have already liked it. No student-facing screen.
 
 ## Not Building Line
-The application completely excludes: multi-user real-time socket chat layouts, message inboxes, admin review queues, global user search engines, filtering the card deck by landmark/buddy preference criteria, account deletion, and university-wide data analytics tracking metrics.
+The application excludes: in-app chat or message inboxes, a free-text "About me" bio, Sharespot-style music/book/movie folders (v2), community reporting or flagging (v2), admin review queues, user search, deck filters by landmark or buddy preference, an opposite-gender-only filter, account deletion, and analytics.

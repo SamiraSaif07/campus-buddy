@@ -1,18 +1,47 @@
 # Design
 
-Four screens, mobile-first, one column. Every field named below exists in `data-model.md` unless it is listed under **Schema Updates Needed** at the bottom. Example data uses realistic ASU students.
+Five screens, mobile-first. Every field named below exists in `data-model.md`. Example data uses realistic ASU students. Layout, states and wording here are the reference for every screen ticket in `tickets/`.
+
+## Visual system
+
+**Layout**
+* Designed for a 390–420px phone width, one column.
+* On a laptop or projector, the app sits in a centered phone-width column on the cream page background; it never stretches into wide multi-column layouts.
+
+**Colour** (4 colours plus charcoal text)
+
+| Role | Colour | Used for |
+| :--- | :--- | :--- |
+| Page background | Warm Cream `#F7F3EE` | Every screen's background |
+| Surfaces | White `#FFFFFF` | Cards, inputs, list rows, modal sheet |
+| Primary accent | Warm Coral `#F26B3A` | Like, Save Profile, Open WhatsApp, active states, Match Revealed backdrop |
+| Secondary accent | Sage Mint `#BCE0D3` (pills) and `#4BA38A` (icons) | Overlap Score badge, landmark tag, verified tick, "Study" pill |
+| Text | Charcoal `#1E1E1E` | All body text and headings |
+| Placeholder | Warm neutral `#EFE9E0` | Empty extra-photo slots on the card back, loading placeholders |
+
+**Contrast rules** (checked against WCAG AA)
+* Charcoal on cream (15:1), white (17:1) or sage pills (11.7:1): fine for all text.
+* White text on coral is only 3:1. Use it only for **bold labels of 19px or larger** (buttons, the "It's a match!" heading). Smaller text on coral uses charcoal (5.5:1).
+* Never use coral or `#4BA38A` for body text on cream or white (under 3:1). They are for buttons, icons and accents only.
+
+**Personality**
+Friendly, cozy and campus-oriented. Empty states and headers leave room for small hand-drawn doodles (to be drawn later; not required to ship). Colour inspiration came from Tantan; only the palette mood is borrowed, never its logo, mascot or screens.
+
+**Motion**
+* The card flip (R14) is a 3D turn of about 0.4s.
+* Students with reduced motion enabled get an instant swap instead.
+* Every gesture also has a visible button.
 
 ## Navigation
 
-* No session in Local Storage → Screen 1.
+* No session in LocalStorage → Screen 1.
 * Screen 1, new email, correct code → Screen 2.
 * Screen 1, recognized email, correct code → Screen 3.
-* Saved session in LocalStorage that the server accepts → Screen 3.
-* Saved session the server rejects → Screen 1.
-* Screen 2, "Save Profile" succeeds → Screen 3.
-* Screen 3, edit button → Screen 2 (pre-filled).
-* Screen 3, right-swipe that completes a mutual match → Screen 4 opens as a modal over Screen 3.
-* Screen 4, close → back to Screen 3, next card.
+* Saved session the server accepts → Screen 3; a session it rejects → Screen 1.
+* Screen 2, Save Profile succeeds → Screen 3.
+* Screen 3, "Me" → Screen 2 (pre-filled); "Buddies" → Screen 5; flip button → card back and back again.
+* Screen 3, a right-swipe that completes a mutual match → Screen 4 modal over Screen 3; "Continue matching" closes it and shows the next card.
+* Screen 5, back arrow → Screen 3; tap a buddy → Screen 4 modal over Screen 5; "Back to Buddies" closes it.
 
 ## Screen 1 — Registration & Sign-In Gateway
 
@@ -20,140 +49,204 @@ Four screens, mobile-first, one column. Every field named below exists in `data-
 
 **Layout, top to bottom**
 1. App name "Campus Buddy" and one line: "Find a study or hangout buddy at ASU."
-2. **Email field** (`email`). Placeholder: `name@students.asu.edu.jo`.
-3. **Continue** button.
-4. After the email passes R1, the same card switches to the **Pending view**: the email shown read-only with a "Change" link, a **6-digit code field** (numeric, 6 characters), and a **Verify** button.
-5. **Error banner** slot directly above the active button.
+2. Pledge line in a sage pill: "Strictly for platonic study buddies and campus friends at ASU."
+3. **Email field** (`email`), placeholder `name@students.asu.edu.jo`, and a coral **Continue** button.
+4. After R1 passes, the card switches to the **Pending view**: email shown read-only with a "Change" link, a **6-digit code field**, and a **Verify** button.
+5. Error banner slot directly above the active button.
 
-Verification status lives in frontend state only (R2). No Student row is created on this screen; the email is carried to Screen 2 in frontend state (see Schema Updates Needed, item 3).
+No Student row is created on this screen; the email is carried to Screen 2 in frontend state.
 
 **Empty state**
-Email field blank, Continue button disabled until the field has text. No banner. The code field is not shown yet.
+Email field blank; Continue disabled until the field has text; pledge line visible; space above the title for a small doodle.
 
 **Loading state**
-After Continue: the button shows a small spinner and the label "Checking…", and the field is locked. After Verify: same treatment, label "Verifying…". Nothing else on the card moves.
+After Continue or Verify: the button shows a spinner and "Checking…" / "Verifying…", and the field is locked.
 
 **Error state**
-* Wrong suffix (R1): red banner "Use your ASU student email ending in @students.asu.edu.jo." The field keeps the typed text and is highlighted.
-* Wrong code (R2): red banner "That code is not correct. Try again." Code field clears; the user stays in the Pending view.
-* Network failure: banner "Can't reach Campus Buddy right now. Check your connection and try again." with a **Retry** button. Typed input is kept.
+* Wrong suffix (R1): banner "Use your ASU student email ending in @students.asu.edu.jo." The field keeps the text and is outlined.
+* Wrong code (R2): banner "That code is not correct. Try again." Code field clears; stays in Pending.
+* Network failure: banner "Can't reach Campus Buddy right now. Check your connection and try again." with **Retry**; input is kept.
 
 **Full state**
-Pending view showing `lina.haddad@students.asu.edu.jo`, code field filled with six digits, Verify enabled. On success, the card briefly shows the Verified view ("Verified ✓") before routing: Lina is new, so she goes to Screen 2; a returning student such as `omar.khalil@students.asu.edu.jo` goes straight to Screen 3.
+Pending view showing `lina.haddad@students.asu.edu.jo`, six digits typed, Verify enabled. On success, "Verified ✓" (sage tick) shows briefly before routing: Lina is new, so she goes to Screen 2. The demo account `demo.student@students.asu.edu.jo` is recognized and goes straight to Screen 3.
 
 ## Screen 2 — The 'Me' Profile Suite & Schedule Panel
 
-**Serves:** R3, R4, R5, R6, N5, N6
+**Serves:** R3, R4, R5, R6, R15, N5, N6, N8
 
-**Layout, top to bottom** (one scrolling form; required fields marked with an asterisk)
+**Layout, top to bottom** (one scrolling form on white cards; required fields marked *)
 1. **Photos**
-   * Main photo URL* (`main_photo_url`) with a small square preview once it passes the check.
-   * Up to 4 mood photo URL fields (`mood_photo_urls`), added one at a time with "+ Add mood photo".
-   * Photo error banner and 3-strike countdown slot (R4) directly under the photo fields.
+   * Main photo URL* (`main_photo_url`) with a square preview once it passes.
+   * Extra photos (`mood_photo_urls`): three URL slots labelled "Back of your card". Slot 1 is required*, slots 2 and 3 optional. Each shows a small preview once it passes.
+   * Photo error banner and the 3-strike countdown slot (R4) under the photo fields.
 2. **About you**
-   * First name* (`first_name`), Last name* (`last_name`), with the note "Only shown after a mutual match" under Last name.
-   * Major* (`major`): free text with suggestions from the Major Suggestions list.
-   * Academic year* (`academic_year`): select from the Academic Years list.
-   * Buddy preference* (`buddy_preference`): three-way toggle Study / Hangout / Both.
-3. **Optional**
-   * Gender (`gender`): select from Gender Options, with a blank "Prefer not to say" default.
-   * MBTI (`mbti`): select of the 16 four-letter types, blank default.
-   * Birthday (`birthday`): month and day pickers only, no year (N5).
-   * Interest tags (`interest_tags`): type and press Enter to add a chip, up to 5; each chip has a remove ×.
-   * Preferred ASU landmark (`preferred_landmark`): select from ASU Landmarks.
-4. **Contact (revealed only after a mutual match)**
-   * WhatsApp number* (`whatsapp_number`): digits only, helper text "International format, e.g. 9627XXXXXXXX".
-   * Instagram handle (`instagram_handle`), Discord handle (`discord_handle`).
-5. **Free blocks** (`schedule_blocks`): 5×5 grid. Columns Sun–Thu, rows 8:30–10:00, 10:00–11:30, 11:30–1:00, 1:00–2:30, 2:30–4:00. Tapping a cell toggles it filled (free) or empty (busy). A counter under the grid reads "6 free blocks selected".
-6. **Save Profile** button, fixed to the bottom of the viewport.
+   * First name* (`first_name`), Last name* (`last_name`) with "Only shown after a mutual match".
+   * Major* (`major`): free text with offline suggestions.
+   * Academic year* (`academic_year`).
+   * Gender* (`gender`): Male / Female, with "Used only to match you with the right people. Never shown on your card."
+   * Who you'd like to meet* (`gender_preference`): a two-option toggle. A female student sees **Only Girls** (selected by default) / **Both**; a male student sees **Only Boys** (default) / **Both**. It appears once Gender is chosen.
+   * Buddy preference* (`buddy_preference`): Study / Hangout / Both.
+3. **Prompts** (`prompts`): three slots. Each has a prompt picker (the 20 from `prompts.md`, already-used prompts greyed out) and an answer box with a live "0/150" counter. Slot 1 is required*.
+4. **Optional**
+   * MBTI (`mbti`): picker of the 16 types, blank by default.
+   * Birthday (`birthday`): month and day only.
+   * Interest tags (`interest_tags`): type and press Enter, up to 5 chips.
+   * Preferred ASU landmark (`preferred_landmark`).
+5. **Contact (revealed only after a mutual match)**
+   * WhatsApp number* (`whatsapp_number`): "International format, e.g. 9627XXXXXXXX".
+   * Instagram (`instagram_handle`) and Discord (`discord_handle`).
+6. **Free blocks** (`schedule_blocks`): 5×5 grid, Sun–Thu × the five blocks. Free cells fill sage; the counter reads "6 free blocks selected".
+7. **Save Profile**: coral button fixed to the bottom.
 
-**Empty state** (new student, first visit)
-All fields blank, toggles unselected, grid all empty, counter "0 free blocks selected". Short intro at the top: "Set up your profile. Fields marked * are required." Save Profile is visible but disabled until all seven required fields are filled.
+**Empty state** (new student)
+All fields blank; the gender preference toggle hidden until Gender is chosen; prompt slots show "Pick a prompt"; extra photo slots show `#EFE9E0` placeholders; grid empty, counter "0 free blocks selected". Intro line: "Set up your profile. Fields marked * are required." Save disabled until all 11 required fields are filled.
 
 **Loading state**
 * Photo check: the URL field shows a spinner and "Checking photo link…"; Save is disabled while any check runs.
-* Opening the screen to edit an existing profile: grey placeholder bars in place of each field for the moment before data arrives, then the form fills in.
-* Saving: Save Profile shows a spinner and "Saving…"; the form is locked.
+* Opening for edit: grey `#EFE9E0` bars in place of each field until data arrives.
+* Saving: Save shows a spinner and "Saving…"; the form is locked.
 
 **Error state**
-* Photo check fails (R3): red banner with the exact reason the server returned, e.g. "Photo link must start with https://" or "Photo link must end in .jpg, .jpeg, .png or .webp". Attempts left are shown: "2 attempts left".
-* Third consecutive failure (R4): photo fields disabled, banner "Too many invalid photo links. Try again in 14:59", counting down live, plus a short campus compliance note: "Use a clear, appropriate photo of yourself."
-* Missing required field or bad WhatsApp format (R5): save is rejected; each problem field is outlined red with one line under it ("Required", "Use digits only, e.g. 9627XXXXXXXX"), and the page scrolls to the first one.
-* A previously valid image no longer loads in its preview: the preview shows a grey box with "Image can't be loaded" and the URL stays editable.
+* Photo check fails (R3): banner with the exact server reason, e.g. "Photo link must start with https://" or "Photo link must end in .jpg, .jpeg, .png or .webp", plus "2 attempts left".
+* Third consecutive failure (R4): photo fields disabled; banner "Too many invalid photo links. Try again in 14:59", counting down, with "Use clear, appropriate photos of yourself."
+* Missing required field, no extra photo, no prompt answer, or bad WhatsApp format (R5): each problem field outlined with one line ("Required", "Add at least one photo for the back of your card", "Answer at least one prompt", "Use digits only, e.g. 9627XXXXXXXX"); the page scrolls to the first.
+* Prompt answer over 150 characters: the counter turns coral at 150 and typing stops.
+* A preview image that no longer loads: grey box "Image can't be loaded"; the URL stays editable.
 * Network failure on save: banner "Couldn't save your profile. Your changes are still here." with **Retry**.
 
 **Full state**
-Main photo preview loaded; mood photos 2 of 4. First name Lina, Last name Haddad, Major "Computer Science", Academic year "Second Year", Buddy preference **Study**. Gender Female, MBTI INFJ, Birthday 03-14. Tags: "Java OOP", "Competitive programming", "Coffee", "Chess". Landmark "360 Square". WhatsApp 962791234567, Instagram `@lina.codes`. Grid: Sun 10:00–11:30, Mon 11:30–1:00, Tue 10:00–11:30, Wed 1:00–2:30, Thu 8:30–10:00 and 10:00–11:30 filled; counter "6 free blocks selected". Save Profile enabled.
+Lina Haddad, Computer Science, Second Year, Female, Only Girls, Study. Main photo plus 2 extra photos. Prompts: "My go-to spot on campus is… because…" → "360 Square between lectures, because the shade and the falafel stand win every time." and "The class I'd happily explain to anyone is…" → "Structured Programming. I tutor it, so bring your loops!" MBTI INFJ, birthday 03-14, tags "Java OOP", "Competitive programming", "Coffee", "Chess", landmark 360 Square. WhatsApp 962791234567, Instagram `@lina.codes`. Grid with 6 free blocks. Save enabled.
 
 ## Screen 3 — The Main Swipe Deck
 
-**Serves:** R7, R8, R9, R10, R13, N3, N4, N5, N7
+**Serves:** R7, R8, R9, R10, R14, R15, N3, N4, N5, N7
 
-**Layout, top to bottom**
-1. **Top bar:** "Campus Buddy" on the left; on the right a **Matches** button with a count badge (opens the Matches Drawer) and an **Edit profile** button (to Screen 2).
-2. **Card** (one at a time, the top of the deck):
-   * Main photo filling the top half; mood photos as small thumbnails or swipeable in the photo area.
-   * First name (`first_name`), with the "🍰 B-DAY TODAY!!" tag beside it only when `birthday` matches today in Asia/Amman (R10).
-   * Overlap Score badge, e.g. "3 matching windows" (computed, R7).
-   * Zero-overlap notice when R8 applies: "0 Overlapping Windows — Schedules conflict, but you share a major or buddy preference!"
-   * Major, Academic year, Buddy preference, Gender, MBTI, interest tag chips, preferred landmark with a pin icon.
-   * Optional fields that are empty are not shown at all (no blank rows).
-   * Never on the card: last name, WhatsApp, Instagram, Discord (N4), or any birthday date or age (N5).
-3. **Pass (✕)** and **Like (♥)** buttons under the card. Swiping the card left or right does the same.
-4. **Matches Drawer:** slides up from the bottom; one row per mutual match with first name and a **WhatsApp** button (R13). Close with a handle or tap outside.
+**Layout**
+1. **Top bar:** "Me" (profile icon, to Screen 2) on the left, "Campus Buddy" in the middle, "Buddies" (people icon with a count badge, to Screen 5) on the right.
+2. **Card front** (white, rounded):
+   * Main photo filling the top two-thirds.
+   * First name in large charcoal text, with the "🍰 B-DAY TODAY!!" tag when it applies (R10).
+   * Overlap Score badge in a sage pill ("3 matching windows"), or the R8 notice in its place.
+   * Major · Academic year on one line; Buddy preference as a pill.
+   * Flip button (↻ "More about Lina") in the top-right corner of the card.
+3. **Card back** (same card, turned over):
+   * Left column: three photo slots stacked top, middle, bottom. Filled slots show the extra photos; empty slots are `#EFE9E0` boxes.
+   * Beside and between the photos, zig-zagging down the card: each prompt question in small bold text with its answer underneath.
+   * Bottom: interest tag chips, MBTI, and the landmark in a sage pill with a pin icon.
+   * The back scrolls inside the card if the content is taller than the card; the flip button stays fixed in the corner.
+4. **Pass (✕)** in white with a charcoal icon, and **Like (♥)** in coral, under the card. They work from either side; swiping the card does the same.
 
-**Empty state**
-* **Deck Exhausted** (no unswiped candidates remain, R7): card area replaced by a message: "You've seen everyone for now. New students join all the time — check back later." Matches button still works.
-* **Daily Cap Reached** (15 swipes today, N3): card area replaced by "That's your 15 for today. Come back tomorrow for a fresh deck." Matches button still works.
-* **Matches Drawer with no matches:** "No matches yet. When someone you liked likes you back, they'll appear here."
-
-**Loading state**
-* Deck loading: a grey card-shaped placeholder with pulsing bars where the name, badge and chips will be; Pass and Like are disabled.
-* After a swipe: the card animates off, the buttons stay disabled until the server confirms the swipe, then the next card appears.
-* Drawer loading: three grey placeholder rows.
-
-**Error state**
-* Deck fails to load: card area shows "Couldn't load your deck." with **Retry**.
-* A swipe fails to save: the card slides back into place with a banner "Your swipe didn't go through. Try again."
-* Duplicate swipe rejected (N7): the card is removed from view silently and the next card loads; no error is shown, because the server already has that swipe.
-* Session rejected by the server: route to Screen 1.
-* A card's photo URL no longer loads: grey photo area with the first name's initial in the centre; the rest of the card displays normally.
-* Drawer fails to load: "Couldn't load your matches." with **Retry**.
-
-**Full state**
-Card for Omar: main photo, "Omar" with the 🍰 B-DAY TODAY!! tag, badge "3 matching windows", Computer Science, Second Year, Buddy preference Study, Male, INTP, tags "Java OOP", "Gym", "Football", landmark "360 Square". Matches badge shows 2. Drawer lists "Yara — WhatsApp" and "Ahmad — WhatsApp".
-Second example, R8: card for Dana, Software Engineering, Third Year, Buddy preference Study, badge replaced by the zero-overlap notice.
-
-## Screen 4 — The 'Match Revealed' Screen Gateway
-
-**Serves:** R11, N1
-
-**Layout** (modal over Screen 3, dimmed background)
-1. Heading "It's a match!"
-2. Matched student's main photo.
-3. First name and Last name (`first_name`, `last_name`), Major, Academic year.
-4. Instagram handle and Discord handle, each shown only if present.
-5. **Open WhatsApp** button, full width, opening a click-to-chat link built from `whatsapp_number`.
-6. **Keep swiping** link that closes the modal.
-
-No message box, chat field or inbox on this screen (N1).
+Never on any card: last name, WhatsApp, Instagram, Discord (N4), birthday date or age (N5), or gender (R9).
 
 **Empty state**
-The match has no Instagram or Discord handle: those rows are not shown. Name, Major, Academic year and the WhatsApp button always appear, because they are required fields.
+* **Deck Exhausted** (R7): the card area shows a doodle space and "You've seen everyone for now. New students join all the time — check back later." The Buddies button still works.
+* **Daily Cap Reached** (N3): "That's your 15 for today. Come back tomorrow for a fresh deck." The Buddies button still works.
+* **Card back with 1 extra photo and 1 prompt:** two placeholder slots; the prompt sits beside the first photo; the rest of the back stays in its usual place.
 
 **Loading state**
-The modal opens immediately with the heading and photo area; name and contact rows show grey placeholder bars until the match details arrive. The WhatsApp button is disabled until the number is loaded.
+* Deck loading: a card-shaped `#EFE9E0` placeholder with pulsing bars; Pass, Like and flip disabled.
+* After a swipe: the card animates off; the buttons stay disabled until the server confirms; then the next card appears front-side up.
 
 **Error state**
-Match details fail to load: modal shows "You matched! We couldn't load their details right now. You'll find them in your Matches." with **Close**. The match is already stored, so it appears in the Matches Drawer (R13).
+* Deck fails to load: "Couldn't load your deck." with **Retry**.
+* Swipe fails to save: the card slides back; banner "Your swipe didn't go through. Try again."
+* Duplicate swipe rejected (N7): the card is skipped silently and the next one loads.
+* Session rejected: route to Screen 1.
+* A main photo that won't load: grey area with the first-name initial; the rest of the card renders. An extra photo that won't load on the back shows a `#EFE9E0` slot with a small broken-image line icon.
 
 **Full state**
-"It's a match!" Photo of Omar. "Omar Khalil", Computer Science, Second Year. Instagram `@omar.k`, Discord `omark#2048`. Open WhatsApp button active. Keep swiping link below.
+* Front: Omar, 🍰 B-DAY TODAY!!, "3 matching windows", Computer Science · Second Year, Study pill. Buddies badge shows 2.
+* Back: three extra photos down the left. "Outside of class, you'll find me…" → "At the gym or losing at FIFA to my roommate." and "A study habit I swear by is…" → "Pomodoro and a good playlist." Tags "Java OOP", "Gym", "Football"; INTP; landmark pill "360 Square".
+* R8 example: Dana, Software Engineering, Third Year, Study, with the zero-overlap notice in place of the badge.
+
+## Screen 4 — The 'Match Revealed' Modal
+
+**Serves:** R11, N1, N4
+
+**Layout** (coral backdrop over Screen 3 or Screen 5; white sheet in the middle)
+1. "It's a match!" in bold white on the coral backdrop. When opened from Screen 5, the heading is the buddy's first name instead.
+2. Main photo in a circle.
+3. First and Last name, Major · Academic year.
+4. Instagram and Discord rows, only if present.
+5. **Open WhatsApp**: full-width coral button with a bold white label, opening `https://wa.me/<whatsapp_number>`.
+6. **See their card**: shows the card back (R14) inside the sheet, with "Back" to return.
+7. **Continue matching** (from Screen 3) or **Back to Buddies** (from Screen 5).
+
+No message box, chat field or inbox (N1).
+
+**Empty state**
+No Instagram or Discord: those rows are hidden. Name, Major, Year and the WhatsApp button always appear (required fields).
+
+**Loading state**
+The backdrop, heading and photo circle appear immediately; name and contact rows show `#EFE9E0` bars; Open WhatsApp is disabled until the number arrives.
+
+**Error state**
+Details fail to load: "You matched! We couldn't load their details right now. You'll find them on your Buddies screen." with **Close**. The match is already stored, so it appears on Screen 5.
+
+**Full state**
+"It's a match!" Omar's photo. "Omar Khalil", Computer Science · Second Year. Instagram `@omar.k`, Discord `omark#2048`. Open WhatsApp active, See their card, Continue matching.
+
+## Screen 5 — History Buddies
+
+**Serves:** R13, R11, N4
+
+**Layout**
+1. Top bar: back arrow (to Screen 3) and the title "Your buddies".
+2. Scrollable list on cream, one white row per buddy, newest match first:
+   * Left: main photo thumbnail (circle), full name, and major under it.
+   * Right: WhatsApp icon button (coral), Instagram and Discord icon buttons (charcoal outline), shown only if present.
+   * Tapping anywhere outside the icon buttons opens Screen 4 for that buddy.
+
+**Empty state**
+Doodle space and "No buddies yet. When someone you liked likes you back, they'll appear here." with a coral **Back to the deck** button.
+
+**Loading state**
+Three `#EFE9E0` placeholder rows with a circle and two bars each.
+
+**Error state**
+* List fails to load: "Couldn't load your buddies." with **Retry**.
+* A buddy's photo won't load: circle with their first-name initial.
+* Session rejected: route to Screen 1.
+
+**Full state**
+* Omar Khalil, Computer Science: WhatsApp, Instagram, Discord.
+* Yara Nasser, Pharmacy: WhatsApp, Instagram.
+* Ahmad Saleh, Civil Engineering: WhatsApp only.
 
 ## Schema Updates Needed
 
-No new columns are required by these four screens. Three items are not yet written down anywhere and need a decision before tickets are cut:
+None. The fields this design needs (`gender_preference`, `prompts`, `mood_photo_urls` with 1–3 entries, `gender` required) were added to `data-model.md` on 2026-11-19.
 
-1. **Mock verification code value.** R2 uses one shared 6-digit code, but no file states where it lives. Proposed: a server-side configuration value in `.env`, not a database field.
-2. **Demo account identity.** `data-model.md` refers to "the demo account's `id`" for the seeded likes, but does not say whether the demo account is one of the 20 seeded Students or a 21st row, or which email it uses.
-3. **When the Student row is created.** Screen 1 creates nothing, and every required field must exist at save time (R5). Proposed rule for `data-model.md`: the Student row and its `id` are created when Screen 2 is first saved, using the email carried from Screen 1. Until then, the session in LocalStorage is empty.
+# Prompts
+
+Students answer **1 to 3** of these prompts on Screen 2 (R5). Each answer is at most **150 characters**. Answers appear on the back of the card (R14).
+
+This is a working draft: edit, swap or reword prompts freely during development, then keep this file as the single source for the list. There is no free-text "About me" field anywhere in the app (N8).
+
+## Study & classes
+1. The class I'd happily explain to anyone is…
+2. My ideal study session looks like…
+3. The best time to find me studying is…
+4. A study habit I swear by is…
+5. I'm looking for a buddy to help me survive…
+
+## ASU campus life
+6. My go-to spot on campus is… because…
+7. The best thing to grab between lectures is…
+8. My unpopular opinion about campus life is…
+9. A club or event at ASU I'd love company for is…
+10. The perfect free block (no class!) for me is…
+
+## Hobbies & me
+11. Outside of class, you'll find me…
+12. A hobby I want to get better at this semester is…
+13. Ask me about…
+14. Something that always makes my day is…
+15. A small win I'm proud of this year is…
+
+## Favourites (v1 stand-in for media folders)
+16. The song I have on repeat right now is…
+17. A book I'd recommend to a friend is…
+18. A movie or series I could rewatch forever is…
+19. My comfort food after a long day is…
+20. A game, app or podcast I can't stop talking about is…
