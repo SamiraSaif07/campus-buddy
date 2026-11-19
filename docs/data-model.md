@@ -12,8 +12,10 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 * `buddy_preference`: required; `Study`, `Hangout`, or `Both`.
 * `whatsapp_number`: required; digits only, international format (e.g., `9627XXXXXXXX`). Withheld until a mutual match (N4).
 * `main_photo_url`: required; text URL to a publicly hosted image.
-* `mood_photo_urls`: optional; up to 4 text URLs.
-* `gender`: optional; one value from the Gender Options list.
+* `mood_photo_urls`: required; 1 to 3 text URLs to publicly hosted images, shown on the card back (R14). The first is required; the other two are optional.
+* `gender`: required; one value from the Gender Options list. Used only by the R15 filter; never displayed on a card.
+* `gender_preference`: required; `Only Girls`, `Only Boys`, or `Both`. Defaults to the student's own gender (`Female` → `Only Girls`, `Male` → `Only Boys`). A student may choose only their own gender's option or `Both`.
+* `prompts`: required; 1 to 3 objects `{ question, answer }`. `question` is one of the prompts in `prompts.md`, used at most once per profile; `answer` is at most 150 characters.
 * `mbti`: optional; four-letter type.
 * `birthday`: optional; month and day only, as `MM-DD`. No year is stored.
 * `interest_tags`: optional; up to 5 open free-text tags.
@@ -38,13 +40,14 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 
 ## Relationships
 * A Student has zero or more View Logs and zero or more Swipes, as swiper and as target.
-* A Match exists between Student A and Student B when a `like` Swipe exists from A to B and a `like` Swipe exists from B to A. The Matches Drawer (R13) and the Match Revealed screen (R11) both read Matches this way.
+* A Match exists between Student A and Student B when a `like` Swipe exists from A to B and a `like` Swipe exists from B to A. The Buddies screen (R13) and the Match Revealed modal (R11) both read Matches this way. A Match's date is the `created_at` of the later of the two `like` Swipes; Screen 5 lists Matches newest first.
 
 ## Rules
 * A Student row and its `id` are created on the first successful save of Screen 2, using the email carried from Screen 1 in frontend state. Before that, nothing is stored and LocalStorage stays empty.
 * A View Log row is written at the moment a card is swiped, left or right. Showing a card writes nothing.
 * A Student can swipe a given target at most once: one Swipe per (`swiper_id`, `target_id`) pair.
-* The deck for a Student excludes their own `id` and every `target_id` they have already swiped. When no candidates remain, the deck shows the Deck Exhausted state.
+* The deck for a Student excludes their own `id`, every `target_id` they have already swiped, and every Student ruled out by the gender filter. When no candidates remain, the deck shows the Deck Exhausted state.
+* Gender filter (R15) is mutual: Student A sees Student B only if B's `gender` fits A's `gender_preference` and A's `gender` fits B's `gender_preference`.
 * All timestamps are stored in UTC. The N3 daily cap converts to the Asia/Amman calendar date only when counting.
 * Overlap Score is calculated at query time by counting cells that are `true` in both Students' `schedule_blocks`. It is never stored.
 * No rows are ever deleted. Profile edits overwrite the Student's fields in place.
@@ -61,9 +64,12 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 Kept as static configuration arrays in one shared place, so new universities can add their own later (Risk 6).
 * Academic Years: ['First Year', 'Second Year', 'Third Year', 'Fourth Year', 'Fifth Year+']
 * Gender Options: ['Male', 'Female']
+* Gender Preferences: ['Only Girls', 'Only Boys', 'Both']
+* Prompts: the 20 prompts in `prompts.md`.
 * ASU Landmarks: ['IT Faculty Lab', '360 Square', 'Main Library', 'Deanship Courtyard', 'Engineering Building Cafe']
 * Major Suggestions (frontend only, offline; suggestions, not a restriction): ['Computer Science', 'Software Engineering', 'Cybersecurity', 'Artificial Intelligence', 'Computer Information Systems', 'Civil Engineering', 'Electrical Engineering', 'Mechanical Engineering', 'Architecture', 'Pharmacy', 'Nursing', 'Accounting', 'Business Administration', 'Marketing', 'Law', 'English Language and Literature', 'Graphic Design', 'Interior Design']
 
 ## Demo seed (N2)
-* 20 Student rows covering diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs. One of the 20 is the demo account, `samira.sweidan@students.asu.edu.jo`.
-* Seeded Swipe rows in which selected other seeded profiles have already sent a `like` to the demo account's `id`, so a right-swipe on one of them produces a mutual match live on Demo Night.
+* 20 Student rows covering diverse ASU majors, interest tags, schedule blocks, landmarks, public photo URLs (main plus 1–3 extras) and 1–3 prompt answers. One of the 20 is the demo account, `demo.student@students.asu.edu.jo`.
+* At least 8 of the other 19 profiles are visible to the demo account under its default same-gender preference, so the demo deck is never thin.
+* Seeded Swipe rows in which at least 3 seeded profiles visible to the demo account have already sent a `like` to its `id`, so a right-swipe on one of them produces a mutual match live on Demo Night.

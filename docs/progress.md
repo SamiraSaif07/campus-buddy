@@ -1,6 +1,6 @@
 # Progress — Week 4
 
-* **Done:** `design.md` (all 4 states per screen), updated `data-model.md` and `decisions.md`, 12 numbered tickets in `docs/tickets/` with `README.md`, pushed to GitHub.
-* **Doing:** Reviewing Ticket 01 (`01-project-skeleton.md`) ahead of Session 5.
-* **Next:** Building the project skeleton and database tables on feature branches (Session 5).
+* **Done:** all Task 03 planning files; `design.md` (5 screens, 4 states each, visual system); `prompts.md`; 13 tickets in `tickets/`; `decisions.md` and `data-model.md` updated for the card flip, Buddies screen, prompts and gender filter.
+* **Doing:** grey-box wireframes of the 5 screens in Figma.
+* **Next:** tickets 01–03 (skeleton, tables, demo seed) in Week 5.
 * **Blocked:** Nothing.

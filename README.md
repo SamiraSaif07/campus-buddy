@@ -3,10 +3,10 @@
 A platonic matchmaking web app for Applied Science University students to sync schedules, find study groups, and make like-minded friends.
 
 ## **Status:** 
-Week 3 — Brief, research, workflow, requirements, screens, data model, architecture, stack, rules, and decisions written; plan and fresh-chat test next. No code yet.
+Week 4 — Planning docs, screen design and 13 build tickets done; Figma wireframes next, code starts Week 5.
 
 ## **Docs:** 
-See the [docs/ folder](docs/) — starting with the [Project Brief](docs/brief.md), [Competitive Research](docs/research.md), and [Development Workflow](docs/workflow.md).
+See the [docs/ folder](docs/) — start with the [Plan](docs/plan.md), then the [Project Brief](docs/brief.md), [Competitive Research](docs/research.md), and [Development Workflow](docs/workflow.md).
 
 
 ## Context

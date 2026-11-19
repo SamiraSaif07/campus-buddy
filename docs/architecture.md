@@ -14,9 +14,10 @@ The application implements a mobile-first, three-tier web architecture optimized
   * Extracts the cryptographically random student `id` text token from LocalStorage (`{"asu_matcher_student_id": "STU_XXXXX"}`) on network actions for passwordless session persistence.
   * Manages the visual toggle display states between the Pending vs Verified onboarding screens entirely in frontend state.
   * Tracks photo URL verification failures locally to manage the 3-strike lockout and the 15-minute countdown timer.
+  * Runs the card flip (front and back of the same card) entirely in the page, using card data the server already sent.
 * **Not Allowed To Do (Browser Boundaries):**
   * The browser is strictly forbidden from querying or communicating with the database layer directly.
-  * The browser never calculates the daily exploration cap count, checks for mutual matching conditions, or evaluates schedule overlap metrics. It only displays what the server returns.
+  * The browser never calculates the daily exploration cap count, checks for mutual matching conditions, applies the gender filter, or evaluates schedule overlap metrics. It only displays what the server returns.
   * *Accepted Security Gap:* Because the 3-strike lockout lives in local frontend memory, a browser refresh will reset the timer. This is an accepted prototype constraint for our solo timebox.
 
 ### B. The Web Server (Node/Express API Coordinator)
@@ -25,14 +26,14 @@ The application implements a mobile-first, three-tier web architecture optimized
   * **The Session Check:** Validates incoming student `id` tokens against existing database rows to accept returning user connections.
   * **Simulated Vision Check:** Executes server-side formatting checks to return a simulated pass/fail JSON grade payload modeled on Gemini Flash criteria, preventing client console overrides.
   * **Registration Onboarding (R1, R12):** Enforces the `@students.asu.edu.jo` email format restriction and handles account routing rules.
-  * **Profile Form Validation (R5):** Rejects saves if any of the 7 required inputs are missing or if the WhatsApp string violates the international numeric structure.
-  * **Deck Retrieval Layer (R7, R8):** Pulls candidate datasets by filtering out the active user's own profile and anyone they have already swiped, dynamic sorting by schedule block overlap at runtime, and returning an empty-deck signal payload so the client browser can draw the Deck Exhausted view state if availability hits zero.
-  * **Match Evaluation Engine (R11, R13):** Detects if opposite right-swipe entries exist between two IDs to confirm mutual matches, returning the match's contact details for Screen 4 and the Screen 3 Matches Drawer.
+  * **Profile Form Validation (R5, N8):** Rejects saves if any of the 11 required inputs are missing, if the WhatsApp string violates the international numeric structure, or if a prompt is not in `prompts.md`, is used twice, or has an answer over 150 characters.
+  * **Deck Retrieval Layer (R7, R8, R15):** Pulls candidate datasets by filtering out the active user's own profile, anyone they have already swiped, and anyone excluded by the mutual gender filter, dynamic sorting by schedule block overlap at runtime, and returning an empty-deck signal payload so the client browser can draw the Deck Exhausted view state if availability hits zero.
+  * **Match Evaluation Engine (R11, R13):** Detects if opposite right-swipe entries exist between two IDs to confirm mutual matches, returning the match's contact details for the Screen 4 modal and the Screen 5 Buddies list (newest match first).
   * **Timezone Normalization (R10, N3):** Stores all data logs in UTC format. Converts timestamps dynamically to Asia/Amman time only when counting the daily cap and checking birthdays.
   * **Swipe Recording (N3, N7):** Writes the swipe operation and its corresponding daily view log row in UTC format, and rejects duplicate swipe attempts by the same student on the same target profile.
   * **Session Rejection:** An unrecognized or cleared student ID string is rejected by the server query, causing the frontend state to return the viewport to Screen 1.
 * **Not Allowed To Do (Server Boundaries):**
-  * The server is strictly prohibited from sending last names, phone numbers, or social handles inside standard Screen 3 swipe deck card data payloads.
+  * The server is strictly prohibited from sending last names, phone numbers, social handles, gender, or gender preference inside Screen 3 deck card payloads (front or back).
 
 ### C. The Database Layer (Isolated Persistent Storage)
 * **Core Responsibilities:**

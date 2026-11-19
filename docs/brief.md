@@ -30,15 +30,15 @@ A typical search for a study partner or campus friend looks like this:
 
 On Demo Night, a user can:
 
-* Enter through a single passwordless Registration/Sign-In gateway on Screen 1: type an email that passes the exact ASU student format check (`@students.asu.edu.jo`), then complete simulated registration string code verification by entering a 6-digit mock code.
+* See the pledge "Strictly for platonic study buddies and campus friends at ASU." on Screen 1, then enter through a single passwordless Registration/Sign-In gateway: type an email that passes the exact ASU student format check (`@students.asu.edu.jo`), then complete simulated registration string code verification by entering a 6-digit mock code.
 * See the app switch between Pending vs Verified State UI views, then be routed by account status: a new email continues to profile setup (Screen 2), while a recognized email goes straight to the swipe deck (Screen 3) with the existing profile intact and no duplicate account.
 * Return later on the same browser without signing in again, because the session is kept in browser LocalStorage.
-* Build a profile with a main photo and optional mood photos supplied as text URL strings pointing to public images, alongside major, academic year, buddy preference, interest tags, preferred ASU landmark, optional Instagram and Discord handles, and weekly free blocks.
-* View a daily deck of unswiped student profile cards ordered by schedule overlap, each showing first name, photos, major, academic year, buddy preference (Study, Hangout, or Both), up to 5 interest tags, overlap score, and preferred ASU landmark.
-* Swipe right (like) or left (pass), and on a mutual right-swipe, instantly see the other student's full name, major, academic year, Instagram and Discord handles, and a WhatsApp link on a dedicated "Match Revealed" screen.
-* Reopen any earlier match at any time from the toggleable "Matches Drawer" on the swipe deck, which lists each match's first name with a WhatsApp action button.
+* Build a profile with a main photo and 1–3 extra photos supplied as text URL strings pointing to public images, 1–3 answers to curated campus prompts, major, academic year, gender (used only for matching), who they'd like to meet (same gender by default, or both), buddy preference, interest tags, preferred ASU landmark, optional Instagram and Discord handles, and weekly free blocks.
+* View a daily deck of unswiped student profile cards ordered by schedule overlap. The front shows the main photo, first name, overlap score, major, academic year and buddy preference (Study, Hangout, or Both); flipping the card in place shows the extra photos, prompt answers, interest tags, MBTI and preferred ASU landmark.
+* Swipe right (like) or left (pass), and on a mutual right-swipe, instantly see the other student's full name, major, academic year, Instagram and Discord handles, and a WhatsApp link in a "Match Revealed" modal over the deck.
+* Reopen any earlier match at any time from the History Buddies screen, which lists every match with their WhatsApp and social buttons.
 
-**Demo data:** The database will be pre-seeded with 20 mock profile records covering diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs, plus likes from selected mock profiles to the demo account. This bypasses the cold-start problem so the swipe deck, overlap scores, and match flow are fully demonstrable during the live Demo Night presentation.
+**Demo data:** The database will be pre-seeded with 20 mock profile records covering diverse ASU majors, interest tags, schedule blocks, landmarks, and public photo URLs, plus likes from selected mock profiles to the demo account (`demo.student@students.asu.edu.jo`), which is one of the 20. This bypasses the cold-start problem so the swipe deck, overlap scores, and match flow are fully demonstrable during the live Demo Night presentation.
 
 ### Measures
 
@@ -48,7 +48,7 @@ On Demo Night, a user can:
 | Pre-meeting communication friction | High anxiety over open-ended small talk | Immediate hand-off to direct WhatsApp with shared context (major, free blocks, landmark) |
 | Daily profile card consumption | Infinite, unstructured scrolling | Capped at exactly 15 deliberate cards per user per day |
 | Closed campus network | Unmoderated public phone numbers | Every account passes the `@students.asu.edu.jo` format check and simulated registration string code verification |
-| Match retention | Contacts lost in group chat scroll | Every mutual match stays reachable from the Matches Drawer |
+| Match retention | Contacts lost in group chat scroll | Every mutual match stays reachable from the Buddies screen |
 | Demo readiness | No data to match against | 20 seeded profiles available from the first login on Demo Night |
 
 ## 5. Scope
@@ -63,18 +63,21 @@ On Demo Night, a user can:
   * After verification, the backend looks up the email: a new email routes to profile setup (Screen 2); a recognized email routes directly to the swipe deck (Screen 3) without creating a duplicate account.
   * Sessions persist in browser LocalStorage, so a returning user on the same browser bypasses Screen 1.
 * **Profile photos as text URL strings:**
-  * Each profile stores one main photo and up to 4 optional mood photos as text URL strings pointing to publicly hosted images.
+  * Each profile stores one main photo (card front) and 1–3 extra photos (card back) as text URL strings pointing to publicly hosted images. At least one extra photo is required.
   * The app stores and renders the URL only. No image file is uploaded, stored, or hosted by Campus Buddy, so image hosting costs are zero.
   * Every submitted or edited photo URL passes a simulated Vision validation check before the profile can be saved, with a limit of 3 consecutive failed submissions per session.
-* **Profile data:** required First Name, Last Name, Major, Academic Year, Buddy Preference, WhatsApp number (international format), and main photo URL; optional Gender, MBTI, Birthday (month and day only), up to 5 interest tags, preferred ASU landmark, mood photo URLs, and social handles.
+* **Profile data:** required First Name, Last Name, Major, Academic Year, Gender, Gender Preference, Buddy Preference, WhatsApp number (international format), main photo URL, at least 1 extra photo URL, and at least 1 prompt answer; optional MBTI, Birthday (month and day only), up to 5 interest tags, preferred ASU landmark, up to 2 more extra photos and prompt answers, and social handles.
+* **Curated prompts instead of bios:** students answer 1–3 prompts from a list of 20 (`prompts.md`), 150 characters each. There is no free-text "About me" field.
+* **Same-gender default filter:** gender is required but never shown on a card. Each student matches with their own gender by default and can opt in to Both. The filter is mutual.
 * **Social handles:** limited strictly to Instagram and Discord handles. No other social platforms are collected or displayed.
 * **Profile editing:** users can return from the swipe deck to Screen 2 to edit their saved profile.
 * **Daily discovery cap:** exactly 15 student profile cards per user per calendar day, counted from a log of viewed cards, to protect database health and give users a reason to return.
 * **Block-based availability scheduling:** a 5×5 grid of standard blocks (8:30–10:00, 10:00–11:30, 11:30–1:00, 1:00–2:30, 2:30–4:00) across Sunday to Thursday. Users toggle the blocks they are free, and the deck is ordered by Overlap Score (e.g., "3 matching free windows").
 * **ASU landmark selection:** a predefined list of campus landmarks (e.g., IT Faculty Lab, 360 Square, Main Library) shown on the card so mutual matches can decide where they'd prefer to meet.
 * **Birthday tag:** a "B-DAY TODAY!!" tag on cards whose birthday matches the current day, without showing the date or age.
-* **Zero-chat match gateway:** contact details stay locked until a mutual right-swipe, then surface immediately on the "Match Revealed" screen (Screen 4): full name, major, academic year, Instagram and Discord handles, and a WhatsApp link.
-* **Matches Drawer (Screen 3):** a toggleable drawer on the swipe deck that stores and lists every mutual match with first name and a WhatsApp action button, available even after the daily cap is reached.
+* **Card flip:** each card turns over in place to show the extra photos and prompt answers.
+* **Zero-chat match gateway:** contact details stay locked until a mutual right-swipe, then surface immediately in the "Match Revealed" modal (Screen 4): full name, major, academic year, Instagram and Discord handles, and a WhatsApp link.
+* **History Buddies (Screen 5):** a screen listing every mutual match with their WhatsApp and social buttons, reachable from the deck at any time, including after the daily cap is reached.
 * **Seed data:** 20 pre-seeded mock profiles for development and Demo Night, plus seeded likes from selected mock profiles to the demo account so a mutual match can happen live.
 
 ### Out of scope
@@ -92,6 +95,10 @@ On Demo Night, a user can:
 * Multi-campus deployment or cross-university database indexing.
 * Native iOS or Android mobile application builds.
 * Student account deletion or phone number removal. The honest reason is simplicity for a solo 8-week project.
+* A free-text "About me" bio.
+* Sharespot-style music, book and movie folders (v2 candidate; favourites are covered by prompts for now).
+* Community reporting, flagging or auto-suspension (a 3-strike community flag is a v2 candidate).
+* An opposite-gender-only matching option.
 
 ### Constraints
 
@@ -112,3 +119,4 @@ On Demo Night, a user can:
 | 6 | Data architecture scalability | Hard-coding campus parameters too early could make expanding to other universities difficult later. | Build ASU landmarks and schedule blocks as modular arrays in the data schema so they can accept new university inputs post-MVP. |
 | 7 | Mock Security & LocalStorage Vulnerability | Anyone could theoretically insert a student alphanumeric ID string directly into browser LocalStorage to spoof an active session block. Because a single shared mock 6-digit code replaces SMTP verification, anyone could also sign in with a peer's ASU email and view their matches' WhatsApp links. | Accepted as a standard prototype limitation for our solo zero-budget timeline. Student IDs are cryptographically random and unguessable. Production versions post-MVP will implement true independent SMTP closed-loop verification servers. |
 | 8 | Render Free-Tier Cold Start Lag | Web instances sleep after 15 minutes idle, creating a 60-second lag on the next query. | The developer will manually open the public demo URL link exactly 5 minutes before the live presentation begins to pre-warm the instance container. |
+| 9 | Used as a dating app | A campus swipe app can drift into dating, which breaks the platonic promise and makes students uncomfortable. | Product guardrails: the Screen 1 pledge, same-gender matching by default with a mutual filter, no free-text bios (curated prompts only), and cards anchored on schedule, major, buddy preference and campus landmarks. Community flagging is deferred to v2. |

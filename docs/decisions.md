@@ -7,6 +7,7 @@
 * **Consequence:** `main` history has one commit per feature or fix, and production deploys only from Git release tags.
 
 ## 2026-11-05 — Re-introduction of Profile Photos via URL Pointers
+The photo count (up to 4 mood photos) is superseded by the 2026-11-19 photos entry; the URL-only approach still stands.
 * **Context:** The initial project brief marked all image file uploads out-of-scope to adhere to strict zero-cost hosting limitations. However, a platonic matching deck lacks critical visual context and human connection without profile images.
 * **Decision:** Re-introduce a main profile photo and up to 4 auxiliary mood photos into the profile suite.
 * **Rejection:** Rejected direct binary image file uploads, asset payload handling, and custom cloud file hosting infrastructure.
@@ -56,6 +57,7 @@ Superseded by the 2026-11-05 server-side URL check entry.
 * **Consequence:** R5, R11, and N4 cover exactly two optional handles. Other platforms are out of scope in `brief.md`.
 
 ## 2026-11-05 — Matches Drawer Added
+Superseded by the 2026-11-19 History Buddies screen entry.
 * **Context:** The Match Revealed screen (Screen 4) shows contact details only once, at the moment of the match. After leaving it, a user had no way to reach an earlier match again, and nothing was reachable once the daily cap hit.
 * **Decision:** Add a toggleable Matches Drawer on Screen 3 (R13) that lists every mutual match's first name with a WhatsApp action button, available even after the daily cap is reached.
 * **Rejection:** Rejected a separate Matches screen or tab.
@@ -165,7 +167,7 @@ Superseded by the 2026-11-05 server-side URL check entry.
 
 ## 2026-11-12 — Demo Account Is One of the 20 Seeded Profiles
 * **Context:** `data-model.md` referred to "the demo account's `id`" without saying whether it was one of the 20 seeded profiles or an extra row.
-* **Decision:** The demo account is one of the 20 seeded Students, `samira.sweidan@students.asu.edu.jo`. Other seeded profiles hold the pre-seeded `like` swipes aimed at it.
+* **Decision:** The demo account is one of the 20 seeded Students, `samira.sweidan@students.asu.edu.jo` (changed to `demo.student@students.asu.edu.jo` on 2026-11-19). Other seeded profiles hold the pre-seeded `like` swipes aimed at it.
 * **Rejection:** Rejected a 21st profile outside the seed.
 * **Consequence:** The database holds exactly 20 profiles, matching N2. The demo account's own deck has 19 candidates.
 
@@ -176,6 +178,7 @@ Superseded by the 2026-11-05 server-side URL check entry.
 * **Consequence:** Every stored Student has all seven required fields. A student who leaves before saving starts again as a new user.
 
 ## 2026-11-12 — Design Choices Accepted (`design.md`)
+Two bullets are superseded on 2026-11-19: the Matches button now opens the Buddies screen, and Gender is now required (only MBTI stays blank by default).
 * **Context:** Writing `design.md` forced decisions that no earlier file had made.
 * **Decision:** Accepted all seven:
   * The Student row is created on the first save of Screen 2 (see the entry above).
@@ -187,3 +190,51 @@ Superseded by the 2026-11-05 server-side URL check entry.
   * The on-screen wording for empty, loading and error states is as written in `design.md`.
 * **Rejection:** Rejected showing an error for a duplicate swipe, and rejected a broken-image icon in place of the initial fallback.
 * **Consequence:** `design.md` is the reference for every screen ticket in `docs/tickets/`.
+
+## 2026-11-19 — Five Screens, with the Card Flip as a State of Screen 3
+* **Context:** Students needed more than the card front to decide, and the sitemap drew the extra info as its own page.
+* **Decision:** Keep five screens: Gateway, Me, Deck, Match Revealed (modal), History Buddies. The extra info is the back of the same card, shown by an in-place 3D flip on Screen 3 (an instant swap with reduced motion).
+* **Rejection:** Rejected a separate profile-details page or route.
+* **Consequence:** One card component serves the deck, the Match Revealed modal ("See their card") and the Buddies screen. If week 6 is tight, the animation can drop to an instant swap without breaking R14.
+
+## 2026-11-19 — History Buddies Screen Replaces the Matches Drawer
+* **Context:** On 2026-11-05 a drawer was chosen over a separate matches screen. Reviewing a buddy's full profile and contact links does not fit in a drawer.
+* **Decision:** Screen 5, History Buddies: a scrollable list, newest first, with photo, name and major on the left and WhatsApp/Instagram/Discord buttons on the right. Tapping a buddy reopens the Match Revealed modal. Reachable from the deck's top bar at any time.
+* **Rejection:** Rejected keeping the slide-up Matches Drawer, and rejected a two-column card-and-socials layout (too cramped at phone width).
+* **Consequence:** R13 now describes Screen 5. Ticket 09 builds the Buddies screen instead of the drawer.
+
+## 2026-11-19 — Photos: 1 Main + 1 Required Extra + 2 Optional
+* **Context:** The card back needs photos, and an empty back would look broken.
+* **Decision:** Every profile has a main photo (front) and 1–3 extra photos (back); the first extra is required. Empty slots show a `#EFE9E0` placeholder so the layout keeps its shape. All remain URL strings checked by R3.
+* **Rejection:** Rejected up to 4 optional mood photos, and rejected collapsing the layout when slots are empty.
+* **Consequence:** `mood_photo_urls` holds 1–3 URLs. R5 counts the first extra photo as required.
+
+## 2026-11-19 — Curated Prompts Instead of Bios; Sharespot Folders Deferred
+* **Context:** Shy students need something specific to text about, and open bios invite dating-style self-promotion. Sharespot-style music, book and movie folders would need a media browser.
+* **Decision:** Students answer 1–3 prompts from a list of 20 (`prompts.md`), 150 characters each, at least one required. Favourite song, book and movie are prompts in that list. No free-text "About me" field (N8).
+* **Rejection:** Rejected a free-text bio, and deferred Sharespot-style media folders to v2.
+* **Consequence:** New `prompts` field in `data-model.md`. Prompt answers sit on the card back.
+
+## 2026-11-19 — Gender Required, Hidden from Cards, Same-Gender Default Filter
+* **Context:** Campus Buddy must stay platonic without a moderation team.
+* **Decision:** Gender is required on Screen 2 but never shown on a card. `gender_preference` defaults to the student's own gender (`Only Girls` / `Only Boys`) and can be switched to `Both`. The filter is mutual: two students see each other only if each fits the other's preference.
+* **Rejection:** Rejected an opposite-gender-only option, a one-sided filter, and showing gender as a card badge.
+* **Consequence:** New `gender_preference` field and R15. The demo seed needs enough same-gender profiles for the demo account's deck.
+
+## 2026-11-19 — Anti-Dating Guardrails, and a v2 Community Flag
+* **Context:** A swipe app on campus can drift into dating.
+* **Decision:** Guardrails built into the product: the Screen 1 pledge ("Strictly for platonic study buddies and campus friends at ASU."), the same-gender default, no free-text bios, and cards anchored on schedule overlap, major, year, buddy preference and campus landmarks. Recorded as Risk 9 in `brief.md`.
+* **Rejection:** Rejected building reporting or moderation for the MVP.
+* **Consequence:** A lightweight 3-strike community flag with auto-suspension is logged as a v2 feature.
+
+## 2026-11-19 — Visual System: Warm Cream, Coral and Sage
+* **Context:** The app needed a friendly, campus-oriented look before Figma. Colour inspiration came from Tantan.
+* **Decision:** Cream `#F7F3EE` background, white `#FFFFFF` surfaces, coral `#F26B3A` primary accent, sage `#BCE0D3` / `#4BA38A` secondary accent, charcoal `#1E1E1E` text, warm neutral `#EFE9E0` placeholders. Mobile-first at 390–420px, centered column on laptops.
+* **Rejection:** Rejected copying any app's logo, mascot or screens; only the palette mood is borrowed.
+* **Consequence:** White text on coral is only 3:1, so it is used only for bold labels of 19px or larger. Coral and `#4BA38A` are never body text. Details in `design.md`.
+
+## 2026-11-19 — Demo Account Email Made Non-Personal
+* **Context:** The repository is public, so the seed's demo email would be published.
+* **Decision:** The demo account is `demo.student@students.asu.edu.jo`, still one of the 20 seeded profiles.
+* **Rejection:** Rejected using a real student's address.
+* **Consequence:** `data-model.md`, N2 and ticket 03 use the new address.
