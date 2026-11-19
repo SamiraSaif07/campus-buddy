@@ -6,7 +6,7 @@ Thirteen tickets, numbered in build order. Each one assumes the ones before it e
 
 1. **01 Project skeleton:** the server runs, the database connects, tests run.
 2. **02 Database tables:** the three tables from `data-model.md`.
-3. **03 Demo seed:** 20 profiles, including `demo.student@students.asu.edu.jo`, and the pre-liked swipes.
+3. **03 Demo seed:** 20 profiles, including `202400000@students.asu.edu.jo`, and the pre-liked swipes.
 
 ## The spine (one path all the way through)
 

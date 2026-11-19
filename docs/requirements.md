@@ -3,12 +3,12 @@
 ## Must do
 
 ### R1 — ASU Email Domain Restriction & Community Pledge (Screen 1)
-* **Specification:** The registration interface validates that the email input ends exactly with the `@students.asu.edu.jo` suffix. Screen 1 always displays the pledge line: "Strictly for platonic study buddies and campus friends at ASU."
-* **Done when:** An email ending in any other suffix displays an error banner and no account is created, and the pledge line is visible on Screen 1 in every state.
+* **Specification:** Sign-up and log-in accept only ASU student emails: digits only before `@students.asu.edu.jo` (the student number, e.g. `202400000@students.asu.edu.jo`); letters, dots and any other suffix are rejected. The check runs on the server; the browser repeats it only to show the error sooner. The welcome view and the sign-up view display the pledge line: "Strictly for platonic study buddies and campus friends at ASU."
+* **Done when:** An email with letters or dots before the `@`, or any other suffix, shows "Use your ASU student email, e.g. 202400000@students.asu.edu.jo." and goes no further, and the pledge line is visible on the welcome and sign-up views.
 
-### R2 — Simulated Registration String Code Verification (Screen 1)
-* **Specification:** After the email passes R1, the account enters the Pending State UI view and prompts the user to enter a 6-digit mock registration code as a text string. Verification status is held in local frontend state and is not stored in the database. All accounts use a single shared mock code.
-* **Done when:** Entering the correct mock code switches the account from the Pending State UI view to the Verified State UI view and routes a new user to Screen 2 (returning users are routed by R12); entering any other value keeps the user in the Pending State UI view.
+### R2 — Simulated Code Verification at Sign-Up (Screen 1)
+* **Specification:** After the sign-up email passes R1, is not already registered, and the Campus Buddy password has at least 8 characters, the code view asks for a 6-digit code. All accounts use a single shared mock code (`MOCK_VERIFICATION_CODE`). Verification status is held in local frontend state and is not stored. "Resend code" sends nothing in the MVP and says so honestly. Log-in never asks for a code.
+* **Done when:** The correct code shows the Verified view ("You're in, ASUer. Let's set up your profile.") and routes to Screen 2; any other value shows "That code is not correct. Try again." and stays on the code view.
 
 ### R3 — Profile Photo URL Validation (Screen 2)
 * **Specification:** Every profile photo (the main photo and each extra photo) is submitted as a text URL string pointing to a publicly hosted image. Each submitted URL is passed to a simulated Vision check run on the server (a URL format check; see decisions.md). If the check returns `fail`, the app keeps the user on Screen 2, displays the exact rejection reason returned by the check, and blocks save actions until the URL passes. Any later edit to a saved photo URL re-triggers the check, blocking save actions until a status of `pass` is returned.
@@ -51,9 +51,9 @@
 * **Specification:** When a user's right-swipe completes a mutual right-swipe, a modal opens over Screen 3 showing: main photo, First Name, Last Name, Major, Academic Year, Instagram handle, Discord handle, a click-to-open WhatsApp link, and a "See their card" control that shows the R14 card back. The same modal reopens when the user taps a buddy on Screen 5.
 * **Done when:** A mutual right-swipe immediately opens the modal with the listed fields and a working WhatsApp link, and tapping a buddy on Screen 5 opens the same modal for that buddy.
 
-### R12 — Unified Gateway Checking Routine (Screen 1)
-* **Specification:** When an email input is processed on Screen 1, the backend performs a unique record lookup query. If the email is recognized, entering the valid 6-digit mock code re-initializes the user's persistent local session and routes the viewport directly to Screen 3, bypassing Screen 2 profile setup. If the email is not recognized, the R2 new-user path applies.
-* **Done when:** A returning user completes code verification, skips Screen 2 entirely, and lands on Screen 3 with their existing profile data intact; no duplicate account is created for a recognized email.
+### R12 — Separate Sign-Up and Log-In with a Campus Buddy Password (Screen 1)
+* **Specification:** Sign-up and log-in are separate views. Sign-up takes the email and a Campus Buddy password (at least 8 characters, unrelated to the ASU portal password); if the email already has a Student row, sign-up stops with "This email already has an account." and a link to log in. The password stays in frontend state until the first Save Profile on Screen 2, when the server stores it only as `password_hash` (N9). Log-in takes the email and password; the server compares the password with `password_hash` and, on a match, returns the student's `id`, which is saved to LocalStorage before routing to Screen 3.
+* **Done when:** A returning student logs in with email and password, skips the code view and Screen 2, and lands on Screen 3 with their profile intact; an unknown email and a wrong password both show "Incorrect email or password."; signing up with a registered email never creates a second account.
 
 ### R13 — Buddies Screen (Screen 5)
 * **Specification:** The system stores every swipe persistently. Mutual matches are derived from two `like` swipes in opposite directions and are listed on Screen 5, newest match first. Each row shows the buddy's main photo, full name and major on the left and WhatsApp, Instagram and Discord buttons on the right (Instagram and Discord only if present). Screen 5 is reachable from Screen 3 at any time, including in the Daily Cap Reached and Deck Exhausted states.
@@ -74,7 +74,7 @@
 * **Done when:** The repository contains zero messaging controllers, socket listeners, or chat hooks.
 
 ### N2 — Never Depend on Live Registrations for Demo Night
-* **Specification:** Persistent storage is pre-populated with exactly 20 mock ASU student profiles, one of which is the demo account (`demo.student@students.asu.edu.jo`), covering diverse majors, interest tags, schedule blocks, landmarks, public photo URLs and prompt answers. The seed also includes swipes in which selected profiles visible to the demo account under its gender preference have already liked it.
+* **Specification:** Persistent storage is pre-populated with exactly 20 mock ASU student profiles, one of which is the demo account (`202400000@students.asu.edu.jo`), covering diverse majors, interest tags, schedule blocks, landmarks, public photo URLs and prompt answers. The seed also includes swipes in which selected profiles visible to the demo account under its gender preference have already liked it.
 * **Done when:** A fresh login as the demo account on Demo Night loads a deck with overlap scores and working swipe mechanics without any live user registrations, and a right-swipe on a pre-liking profile opens the Match Revealed modal.
 
 ### N3 — Never Serve More Than 15 Cards per Day
@@ -100,3 +100,7 @@
 ### N8 — Never Offer a Free-Text Bio
 * **Specification:** There is no open "About me" field. Self-description is limited to 1–3 prompt answers from `prompts.md` (150 characters each) and up to 5 interest tags.
 * **Done when:** Screen 2 contains no free-text field other than names, major, interest tags, handles, photo URLs and prompt answers, and the server rejects any prompt answer over 150 characters or any prompt not in `prompts.md`.
+
+### N9 — Never Store or Return a Plain Password
+* **Specification:** The Campus Buddy password is hashed on the server with Node's built-in `crypto.scrypt` and a random salt, and only `password_hash` is stored. The plain password is never written to the database, logs, LocalStorage or the repository, and `password_hash` is never sent to the browser.
+* **Done when:** The `students` table holds no readable password, no API response contains `password_hash`, and log-in still works after a server restart.

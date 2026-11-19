@@ -4,7 +4,8 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 
 ## Student (`students`)
 * `id`: cryptographically random, unguessable alphanumeric string with the prefix `STU_` (e.g., `STU_XXXXX`). Never sequential.
-* `email`: unique; must end with `@students.asu.edu.jo`. Used for the R12 returning-user lookup.
+* `email`: unique; digits only before `@students.asu.edu.jo` (the student number, e.g. `202400000@students.asu.edu.jo`). Used for the R12 sign-up and log-in lookups.
+* `password_hash`: required; the Campus Buddy password hashed with Node's built-in `crypto.scrypt` and a random 16-byte salt, stored as `salt:hash` in hex. Unrelated to the ASU portal password. The plain password is never stored and `password_hash` is never sent to the browser (N9).
 * `first_name`: required. Shown on cards.
 * `last_name`: required. Withheld until a mutual match (N4).
 * `major`: required; open free text. Compared case-insensitively with surrounding whitespace trimmed (R8). The input suggests values from the Major Suggestions list but accepts any text.
@@ -43,7 +44,7 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 * A Match exists between Student A and Student B when a `like` Swipe exists from A to B and a `like` Swipe exists from B to A. The Buddies screen (R13) and the Match Revealed modal (R11) both read Matches this way. A Match's date is the `created_at` of the later of the two `like` Swipes; Screen 5 lists Matches newest first.
 
 ## Rules
-* A Student row and its `id` are created on the first successful save of Screen 2, using the email carried from Screen 1 in frontend state. Before that, nothing is stored and LocalStorage stays empty.
+* A Student row and its `id` are created on the first successful save of Screen 2, using the email and password carried from Screen 1 in frontend state; the password is hashed at that moment. Before that, nothing is stored and LocalStorage stays empty. A student who quits before saving has no account and signs up again.
 * A View Log row is written at the moment a card is swiped, left or right. Showing a card writes nothing.
 * A Student can swipe a given target at most once: one Swipe per (`swiper_id`, `target_id`) pair.
 * The deck for a Student excludes their own `id`, every `target_id` they have already swiped, and every Student ruled out by the gender filter. When no candidates remain, the deck shows the Deck Exhausted state.
@@ -55,8 +56,10 @@ Three nouns: Student, View Log, Swipe. A Match is not stored; it is derived from
 ## Not stored
 * Verification status: local frontend state only (R2).
 * Photo validation attempts and the 15-minute lockout: local frontend session only (R4).
-* Session: held in browser LocalStorage as `{"asu_matcher_student_id": "STU_XXXXX"}`. The browser stores the student's `id` directly for passwordless persistence. Empty until the first save of Screen 2.
+* Session: held in browser LocalStorage as `{"asu_matcher_student_id": "STU_XXXXX"}`, written after the first save of Screen 2 or a successful log-in, so a returning student on the same browser skips Screen 1.
+* Plain password: frontend state only, from sign-up until the first save of Screen 2; never stored (N9).
 * Mock verification code: server-side `.env` variable `MOCK_VERIFICATION_CODE`. Never stored in the database.
+* Demo account password: server-side `.env` variable `SEED_DEMO_PASSWORD`, read by the seed script and stored only as `password_hash`.
 * Overlap Score: computed at query time.
 * Matches: derived from Swipes.
 
@@ -70,6 +73,6 @@ Kept as static configuration arrays in one shared place, so new universities can
 * Major Suggestions (frontend only, offline; suggestions, not a restriction): ['Computer Science', 'Software Engineering', 'Cybersecurity', 'Artificial Intelligence', 'Computer Information Systems', 'Civil Engineering', 'Electrical Engineering', 'Mechanical Engineering', 'Architecture', 'Pharmacy', 'Nursing', 'Accounting', 'Business Administration', 'Marketing', 'Law', 'English Language and Literature', 'Graphic Design', 'Interior Design']
 
 ## Demo seed (N2)
-* 20 Student rows covering diverse ASU majors, interest tags, schedule blocks, landmarks, public photo URLs (main plus 1–3 extras) and 1–3 prompt answers. One of the 20 is the demo account, `demo.student@students.asu.edu.jo`.
+* 20 Student rows covering diverse ASU majors, interest tags, schedule blocks, landmarks, public photo URLs (main plus 1–3 extras) and 1–3 prompt answers. One of the 20 is the demo account, `202400000@students.asu.edu.jo`, whose `password_hash` is made from `SEED_DEMO_PASSWORD`. The other 19 get random passwords nobody needs to know. Every seeded email follows the digits-only rule.
 * At least 8 of the other 19 profiles are visible to the demo account under its default same-gender preference, so the demo deck is never thin.
 * Seeded Swipe rows in which at least 3 seeded profiles visible to the demo account have already sent a `like` to its `id`, so a right-swipe on one of them produces a mutual match live on Demo Night.

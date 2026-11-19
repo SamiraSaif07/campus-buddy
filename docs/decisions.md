@@ -20,6 +20,7 @@ The photo count (up to 4 mood photos) is superseded by the 2026-11-19 photos ent
 * **Consequence:** N3 is the only cap rule; the count starts again each Asia/Amman calendar date with no reset job.
 
 ## 2026-11-05 — Unified Passwordless Sign-In / Registration Gateway
+*Superseded on 2026-11-19 by "Separate Sign-Up and Log-In with a Campus Buddy Password".*
 * **Context:** Screen 1 originally only accounted for new user registration onboarding, leaving returning users blocked with no system entry point.
 * **Decision:** Consolidate Registration and Sign-in into a single gateway loop on Screen 1. If an email is recognized, the system routes the user straight to Screen 3 upon successful code simulation, bypassing Screen 2.
 * **Rejection:** Rejected a separate login screen and password-based sign-in.
@@ -167,7 +168,7 @@ Superseded by the 2026-11-19 History Buddies screen entry.
 
 ## 2026-11-12 — Demo Account Is One of the 20 Seeded Profiles
 * **Context:** `data-model.md` referred to "the demo account's `id`" without saying whether it was one of the 20 seeded profiles or an extra row.
-* **Decision:** The demo account is one of the 20 seeded Students, `samira.sweidan@students.asu.edu.jo` (changed to `demo.student@students.asu.edu.jo` on 2026-11-19). Other seeded profiles hold the pre-seeded `like` swipes aimed at it.
+* **Decision:** The demo account is one of the 20 seeded Students, `samira.sweidan@students.asu.edu.jo` (changed to `demo.student@students.asu.edu.jo`, then to `202400000@students.asu.edu.jo`, on 2026-11-19). Other seeded profiles hold the pre-seeded `like` swipes aimed at it.
 * **Rejection:** Rejected a 21st profile outside the seed.
 * **Consequence:** The database holds exactly 20 profiles, matching N2. The demo account's own deck has 19 candidates.
 
@@ -178,7 +179,7 @@ Superseded by the 2026-11-19 History Buddies screen entry.
 * **Consequence:** Every stored Student has all seven required fields. A student who leaves before saving starts again as a new user.
 
 ## 2026-11-12 — Design Choices Accepted (`design.md`)
-Two bullets are superseded on 2026-11-19: the Matches button now opens the Buddies screen, and Gender is now required (only MBTI stays blank by default).
+Three bullets are superseded on 2026-11-19: the Matches button now opens the Buddies screen, Gender is now required (only MBTI stays blank by default), and the top bar is replaced by the bottom tab bar.
 * **Context:** Writing `design.md` forced decisions that no earlier file had made.
 * **Decision:** Accepted all seven:
   * The Student row is created on the first save of Screen 2 (see the entry above).
@@ -235,6 +236,56 @@ Two bullets are superseded on 2026-11-19: the Matches button now opens the Buddi
 
 ## 2026-11-19 — Demo Account Email Made Non-Personal
 * **Context:** The repository is public, so the seed's demo email would be published.
-* **Decision:** The demo account is `demo.student@students.asu.edu.jo`, still one of the 20 seeded profiles.
+* **Decision:** The demo account is `demo.student@students.asu.edu.jo`, still one of the 20 seeded profiles. (Changed to `202400000@students.asu.edu.jo` later on 2026-11-19; see "Digits-Only Student Emails".)
 * **Rejection:** Rejected using a real student's address.
 * **Consequence:** `data-model.md`, N2 and ticket 03 use the new address.
+
+## 2026-11-19 — Welcome View with Two Buttons on One Flow
+*The welcome view stands; the "one flow" part is superseded the same day by "Separate Sign-Up and Log-In with a Campus Buddy Password".*
+* **Context:** Screen 1 opened straight onto an email field. Students expect a welcome screen that separates signing up from logging in, as Bumble does.
+* **Decision:** Screen 1 starts with a welcome view: logo, name, tagline, pledge, "Sign up with university email" and "Log in". Both buttons open the same email and code steps; only the heading changes. The server still routes by email (R12): a new email goes to Screen 2, a recognized one to Screen 3, whichever button was tapped.
+* **Rejection:** Rejected two separate sign-up and log-in flows with their own backend logic, and rejected copying Bumble's logo, colours or screens; only the screen structure is borrowed.
+* **Consequence:** `design.md` Screen 1 has four views (welcome, email, code, verified). Ticket 04 adds the welcome view. No backend change.
+
+## 2026-11-19 — Honest Demo Copy on the Code Step
+* **Context:** No email is sent; every student types the shared code from `MOCK_VERIFICATION_CODE` (Risk 7). "We sent a code to your email" would be untrue.
+* **Decision:** The code step reads "Enter your 6-digit campus code" with the note "Demo version: use the code from the Campus Buddy team."
+* **Rejection:** Rejected copy that claims a code was emailed.
+* **Consequence:** When real SMTP verification arrives after the MVP, only the note and the heading change.
+
+## 2026-11-19 — Bottom Tab Bar: Me · Deck · Buddies
+* **Context:** Screen 3's top bar carried the Me and Buddies buttons, and Screen 5 needed its own back arrow. Three main destinations fit a tab bar better, within thumb reach.
+* **Decision:** A bottom tab bar on Screens 2, 3 and 5: Me, Deck, Buddies (with a count badge). It is hidden on Screen 1, on the Screen 4 modal, and on Screen 2 during first-time setup.
+* **Rejection:** Rejected keeping the top-bar buttons plus a back arrow on Screen 5.
+* **Consequence:** Supersedes the top bar in 2026-11-12 "Design Choices Accepted" and the top-bar wording in "History Buddies Replaces the Matches Drawer" ("reachable from the deck's top bar" now means the Buddies tab). Ticket 06 builds the tab bar; tickets 09 and 11 reuse it.
+
+## 2026-11-19 — Example Data Follows the Same-Gender Default
+* **Context:** The design examples had Lina (Only Girls) seeing Omar on her deck and Omar and Ahmad on her Buddies screen, which R15 would never allow.
+* **Decision:** Lina's examples are now girls: Rania Odeh (deck card and match), Yara Nasser and Huda Saleh (buddies).
+* **Rejection:** Rejected switching Lina to Both, which would hide the default filter in every mockup.
+* **Consequence:** `design.md` examples and the Figma mockups use the new names.
+
+## 2026-11-19 — Separate Sign-Up and Log-In with a Campus Buddy Password
+* **Context:** With one passwordless flow, a returning student had to type the shared code every time they came back on a new browser, and the Log in button had no real meaning.
+* **Decision:** Screen 1 has separate sign-up and log-in views. Sign-up takes the student email and a Campus Buddy password (at least 8 characters, unrelated to the ASU portal password), then the code view. Log-in takes the email and password and skips the code. The password stays in frontend state until the first Save Profile, when the server stores it only as `password_hash` (Node's built-in `crypto.scrypt`, random salt). Both log-in failures show "Incorrect email or password." The Verified view says "You're in, ASUer." because the app does not know the student's name yet.
+* **Rejection:** Rejected creating the Student row at verification with only email and password (it would need every profile field to allow blanks and a "profile finished?" check); the row is still created on the first save of Screen 2. Rejected separate messages for unknown email and wrong password, which would reveal who has an account. Rejected the `bcrypt` package (native build) in favour of built-in `crypto.scrypt`.
+* **Consequence:** New `password_hash` field and N9. R2 now applies to sign-up only; R12 rewritten. Ticket 04 builds both views, ticket 11 stores the hash, tickets 01, 02 and 03 add `SEED_DEMO_PASSWORD`, the column and the demo password. A student who quits before saving their profile has no account and signs up again. Risk 7 now also covers unlimited log-in attempts.
+
+## 2026-11-19 — Digits-Only Student Emails
+* **Context:** ASU student emails are the student number, e.g. `202400000@students.asu.edu.jo`, never names.
+* **Decision:** R1 accepts only digits before `@students.asu.edu.jo`, checked on the server. The demo account becomes `202400000@students.asu.edu.jo`, and every example and seeded email uses the numeric format.
+* **Rejection:** Rejected accepting any text before the `@`, and rejected fixing an exact number of digits (the format could change for future intakes).
+* **Consequence:** `data-model.md`, `requirements.md` (R1, N2), `brief.md`, `screens.md`, `design.md` and tickets 03 and 04 use the new address and rule.
+
+## 2026-11-19 — v2: Real Code Delivery by Email
+* **Context:** The MVP uses one shared `.env` code and "Resend code" sends nothing (Risk 7).
+* **Decision:** Keep the simulated code for the MVP, with honest copy: Resend shows "Demo version: the code does not change. Ask the Campus Buddy team for it." Log a v2 upgrade: an automated sender that emails a fresh, expiring one-time code to the student's ASU address.
+* **Rejection:** Rejected building email delivery inside the 8-week window.
+* **Consequence:** Only the code check, the note and Resend change when v2 arrives; the screens stay the same.
+
+## 2026-11-19 — v2: Code-Verified Password Reset
+* **Context:** With no reset, a student who forgets their Campus Buddy password cannot get back in.
+* **Decision:** Log a v2 feature: "Forgot password?" on the log-in view reuses the code view, then lets the student set a new password. Not built in the MVP.
+* **Rejection:** Rejected adding a reset ticket to the remaining build weeks.
+* **Consequence:** No "Forgot password?" link in the MVP screens. Listed as out of scope in `brief.md`.
+

@@ -34,41 +34,54 @@ Friendly, cozy and campus-oriented. Empty states and headers leave room for smal
 
 ## Navigation
 
-* No session in LocalStorage → Screen 1.
-* Screen 1, new email, correct code → Screen 2.
-* Screen 1, recognized email, correct code → Screen 3.
+* **Bottom tab bar** on Screens 2, 3 and 5: **Me** (Screen 2) · **Deck** (Screen 3) · **Buddies** (Screen 5, with a count badge). The active tab has a coral icon, a bold charcoal label and a short coral bar above it. Screens 1 and 4 have no tab bar, and neither does Screen 2 while a new student fills it in for the first time (there is no deck or buddy list to visit yet).
+* No session in LocalStorage → Screen 1, welcome view.
+* Screen 1 welcome, **Sign up with university email** → sign-up view → code view → Verified → Screen 2.
+* Screen 1 welcome, **Log in** → log-in view → correct email and password → Screen 3. Returning students never see the code view.
+* Sign-up with an email that already has an account → error with a link to the log-in view.
 * Saved session the server accepts → Screen 3; a session it rejects → Screen 1.
 * Screen 2, Save Profile succeeds → Screen 3.
-* Screen 3, "Me" → Screen 2 (pre-filled); "Buddies" → Screen 5; flip button → card back and back again.
+* Screen 3, flip button → card back and back again.
 * Screen 3, a right-swipe that completes a mutual match → Screen 4 modal over Screen 3; "Continue matching" closes it and shows the next card.
-* Screen 5, back arrow → Screen 3; tap a buddy → Screen 4 modal over Screen 5; "Back to Buddies" closes it.
+* Screen 5, tap a buddy → Screen 4 modal over Screen 5; "Back to Buddies" closes it.
+* The Me, Deck and Buddies tabs work in every Screen 3 state, including Daily Cap Reached and Deck Exhausted.
 
-## Screen 1 — Registration & Sign-In Gateway
+## Screen 1 — Welcome, Sign Up & Log In
 
-**Serves:** R1, R2, R12
+**Serves:** R1, R2, R12, N9
 
-**Layout, top to bottom**
-1. App name "Campus Buddy" and one line: "Find a study or hangout buddy at ASU."
-2. Pledge line in a sage pill: "Strictly for platonic study buddies and campus friends at ASU."
-3. **Email field** (`email`), placeholder `name@students.asu.edu.jo`, and a coral **Continue** button.
-4. After R1 passes, the card switches to the **Pending view**: email shown read-only with a "Change" link, a **6-digit code field**, and a **Verify** button.
-5. Error banner slot directly above the active button.
+**Layout, five views**
+1. **Welcome view:** the Campus Buddy logo (two overlapping circles, coral and sage, with small smiles), the name "Campus Buddy", the line "Find a study or hangout buddy at ASU.", the pledge in a sage pill ("Strictly for platonic study buddies and campus friends at ASU."), a coral **Sign up with university email** button, a white **Log in** button with a charcoal outline, and the small line "ASU students only · @students.asu.edu.jo".
+2. **Sign-up view:** back arrow; heading "Sign up with your university email"; the line "We use it to check you're an ASU student. Nobody else sees it."; **University email** (`email`), placeholder `202XXXXXX@students.asu.edu.jo`; **Create a Campus Buddy password** with a show/hide eye button and the hint "Your Campus Buddy password, not your ASU portal password."; the pledge pill; the error banner slot; a coral **Continue** button.
+3. **Code view:** back arrow; lock icon in a sage circle; heading "Enter your 6-digit campus code"; "Signing up as `<email>`" with a **Change email** link; six digit boxes (one real input underneath, so pasting and screen readers work); the note "Demo version: use the code from the Campus Buddy team." in a dashed box; the error banner slot; a coral **Verify** button; "No code yet? **Resend code**". The copy never says a code was sent to the student's inbox, because no email is sent (Risk 7).
+4. **Verified view:** sage tick, "Verified", "You're in, ASUer. Let's set up your profile." and a coral **Set up my profile** button to Screen 2. The app does not know the student's name yet; ASU emails are student numbers.
+5. **Log-in view:** back arrow; heading "Welcome back, ASUer"; the line "Log in with your university email and your Campus Buddy password."; **University email**; **Campus Buddy password** with the eye button; the error banner slot; a coral **Log in** button; "New here? **Sign up**". A correct email and password go straight to Screen 3, with no code step.
 
-No Student row is created on this screen; the email is carried to Screen 2 in frontend state.
+No Student row is created on this screen. After sign-up, the email and the password are carried to Screen 2 in frontend state and stored (the password only as `password_hash`) on the first Save Profile.
 
 **Empty state**
-Email field blank; Continue disabled until the field has text; pledge line visible; space above the title for a small doodle.
+* Sign-up view: both fields blank, Continue disabled until both have text.
+* Code view: six empty boxes, the first outlined in charcoal, Verify disabled, Resend code available.
+* Log-in view: both fields blank, Log in disabled until both have text.
 
 **Loading state**
-After Continue or Verify: the button shows a spinner and "Checking…" / "Verifying…", and the field is locked.
+* Sign-up: Continue shows a spinner and "Checking…" while the server checks the email is free; both fields are locked.
+* Code: Verify shows a spinner and "Verifying…"; the boxes are locked; Resend is hidden.
+* Log in: Log in shows a spinner and "Logging in…"; both fields are locked.
 
 **Error state**
-* Wrong suffix (R1): banner "Use your ASU student email ending in @students.asu.edu.jo." The field keeps the text and is outlined.
-* Wrong code (R2): banner "That code is not correct. Try again." Code field clears; stays in Pending.
+* Email not in the student format (R1): banner "Use your ASU student email, e.g. 202400000@students.asu.edu.jo." The field keeps the text and is outlined.
+* Email already registered (R12): banner "This email already has an account." with a **Log in** link.
+* Password under 8 characters: the password field is outlined with "At least 8 characters" under it.
+* Wrong code (R2): banner "That code is not correct. Try again." The boxes clear and are outlined; Resend code stays available.
+* Resend code (demo only): a sage note "Demo version: the code does not change. Ask the Campus Buddy team for it."
+* Wrong log-in (R12): banner "Incorrect email or password." for both an unknown email and a wrong password, so the screen never reveals who has an account. The email is kept; the password clears.
 * Network failure: banner "Can't reach Campus Buddy right now. Check your connection and try again." with **Retry**; input is kept.
 
 **Full state**
-Pending view showing `lina.haddad@students.asu.edu.jo`, six digits typed, Verify enabled. On success, "Verified ✓" (sage tick) shows briefly before routing: Lina is new, so she goes to Screen 2. The demo account `demo.student@students.asu.edu.jo` is recognized and goes straight to Screen 3.
+* Sign-up: `202410587@students.asu.edu.jo` and a 10-character password, Continue enabled.
+* Code: six digits typed, Verify enabled; on success the Verified view shows, then Screen 2.
+* Log in: the demo account `202400000@students.asu.edu.jo` with its password goes straight to Screen 3.
 
 ## Screen 2 — The 'Me' Profile Suite & Schedule Panel
 
@@ -122,7 +135,7 @@ Lina Haddad, Computer Science, Second Year, Female, Only Girls, Study. Main phot
 **Serves:** R7, R8, R9, R10, R14, R15, N3, N4, N5, N7
 
 **Layout**
-1. **Top bar:** "Me" (profile icon, to Screen 2) on the left, "Campus Buddy" in the middle, "Buddies" (people icon with a count badge, to Screen 5) on the right.
+1. **Header and tab bar:** the logo and "Campus Buddy" at the top; the tab bar at the bottom with Deck active (see Navigation).
 2. **Card front** (white, rounded):
    * Main photo filling the top two-thirds.
    * First name in large charcoal text, with the "🍰 B-DAY TODAY!!" tag when it applies (R10).
@@ -139,8 +152,8 @@ Lina Haddad, Computer Science, Second Year, Female, Only Girls, Study. Main phot
 Never on any card: last name, WhatsApp, Instagram, Discord (N4), birthday date or age (N5), or gender (R9).
 
 **Empty state**
-* **Deck Exhausted** (R7): the card area shows a doodle space and "You've seen everyone for now. New students join all the time — check back later." The Buddies button still works.
-* **Daily Cap Reached** (N3): "That's your 15 for today. Come back tomorrow for a fresh deck." The Buddies button still works.
+* **Deck Exhausted** (R7): the card area shows a doodle space and "You've seen everyone for now. New students join all the time — check back later." The Buddies tab still works.
+* **Daily Cap Reached** (N3): "That's your 15 for today. Come back tomorrow for a fresh deck." The Buddies tab still works.
 * **Card back with 1 extra photo and 1 prompt:** two placeholder slots; the prompt sits beside the first photo; the rest of the back stays in its usual place.
 
 **Loading state**
@@ -155,7 +168,8 @@ Never on any card: last name, WhatsApp, Instagram, Discord (N4), birthday date o
 * A main photo that won't load: grey area with the first-name initial; the rest of the card renders. An extra photo that won't load on the back shows a `#EFE9E0` slot with a small broken-image line icon.
 
 **Full state**
-* Front: Omar, 🍰 B-DAY TODAY!!, "3 matching windows", Computer Science · Second Year, Study pill. Buddies badge shows 2.
+Every example below is what Lina (Only Girls) sees, so every card and buddy is a girl (R15).
+* Front: Rania, 🍰 B-DAY TODAY!!, "3 matching windows", Computer Science · Second Year, Study pill. Buddies badge shows 2.
 * Back: three extra photos down the left. "Outside of class, you'll find me…" → "At the gym or losing at FIFA to my roommate." and "A study habit I swear by is…" → "Pomodoro and a good playlist." Tags "Java OOP", "Gym", "Football"; INTP; landmark pill "360 Square".
 * R8 example: Dana, Software Engineering, Third Year, Study, with the zero-overlap notice in place of the badge.
 
@@ -184,14 +198,14 @@ The backdrop, heading and photo circle appear immediately; name and contact rows
 Details fail to load: "You matched! We couldn't load their details right now. You'll find them on your Buddies screen." with **Close**. The match is already stored, so it appears on Screen 5.
 
 **Full state**
-"It's a match!" Omar's photo. "Omar Khalil", Computer Science · Second Year. Instagram `@omar.k`, Discord `omark#2048`. Open WhatsApp active, See their card, Continue matching.
+"It's a match!" Rania's photo. "Rania Odeh", Computer Science · Second Year. Instagram `@rania.o`, Discord `rania#2048`. Open WhatsApp active, See their card, Continue matching.
 
 ## Screen 5 — History Buddies
 
 **Serves:** R13, R11, N4
 
 **Layout**
-1. Top bar: back arrow (to Screen 3) and the title "Your buddies".
+1. Header: the logo and the title "Your buddies" with the count; the tab bar at the bottom with Buddies active.
 2. Scrollable list on cream, one white row per buddy, newest match first:
    * Left: main photo thumbnail (circle), full name, and major under it.
    * Right: WhatsApp icon button (coral), Instagram and Discord icon buttons (charcoal outline), shown only if present.
@@ -209,9 +223,9 @@ Three `#EFE9E0` placeholder rows with a circle and two bars each.
 * Session rejected: route to Screen 1.
 
 **Full state**
-* Omar Khalil, Computer Science: WhatsApp, Instagram, Discord.
+* Rania Odeh, Computer Science: WhatsApp, Instagram, Discord.
 * Yara Nasser, Pharmacy: WhatsApp, Instagram.
-* Ahmad Saleh, Civil Engineering: WhatsApp only.
+* Huda Saleh, Civil Engineering: WhatsApp only.
 
 ## Schema Updates Needed
 

@@ -6,7 +6,7 @@ Every other ticket needs a running server, a database connection and a test runn
 **Done when**
 * `npm start` runs an Express server that serves `/public/index.html` at `/` and shows "Campus Buddy".
 * The server connects to the dev Neon database through a `pg` pool using `DATABASE_URL` from `.env`, and logs one line confirming the connection.
-* `.env` is listed in `.gitignore`; `.env.example` is committed with `DATABASE_URL` and `MOCK_VERIFICATION_CODE` and no values.
+* `.env` is listed in `.gitignore`; `.env.example` is committed with `DATABASE_URL`, `MOCK_VERIFICATION_CODE` and `SEED_DEMO_PASSWORD` and no values.
 * `node --test` runs and passes one placeholder test.
 * The folders `/public`, `/server/db`, `/server/routes`, `/seed` and `/tests` exist, as rules.md requires.
 

@@ -11,8 +11,9 @@ The application implements a mobile-first, three-tier web architecture optimized
 
 ### A. The Client Browser (Frontend Viewport Layout)
 * **Core Responsibilities:**
-  * Extracts the cryptographically random student `id` text token from LocalStorage (`{"asu_matcher_student_id": "STU_XXXXX"}`) on network actions for passwordless session persistence.
-  * Manages the visual toggle display states between the Pending vs Verified onboarding screens entirely in frontend state.
+  * Extracts the cryptographically random student `id` text token from LocalStorage (`{"asu_matcher_student_id": "STU_XXXXX"}`) on network actions for session persistence.
+  * Manages the Screen 1 views (welcome, sign-up, code, verified, log-in) entirely in frontend state.
+  * Holds the sign-up email and plain password in memory only until the first Save Profile; never writes the password to LocalStorage.
   * Tracks photo URL verification failures locally to manage the 3-strike lockout and the 15-minute countdown timer.
   * Runs the card flip (front and back of the same card) entirely in the page, using card data the server already sent.
 * **Not Allowed To Do (Browser Boundaries):**
@@ -25,7 +26,7 @@ The application implements a mobile-first, three-tier web architecture optimized
   * Serves the static HTML/CSS/JS frontend files directly to the client from a unified public folder asset layer, eliminating complex cross-domain hosting dependencies.
   * **The Session Check:** Validates incoming student `id` tokens against existing database rows to accept returning user connections.
   * **Simulated Vision Check:** Executes server-side formatting checks to return a simulated pass/fail JSON grade payload modeled on Gemini Flash criteria, preventing client console overrides.
-  * **Registration Onboarding (R1, R12):** Enforces the `@students.asu.edu.jo` email format restriction and handles account routing rules.
+  * **Sign-Up and Log-In (R1, R2, R12, N9):** Enforces the digits-only `@students.asu.edu.jo` email rule, rejects sign-up for an email that already has a Student row, checks the mock code against `MOCK_VERIFICATION_CODE`, hashes the password with `crypto.scrypt` on the first profile save, and on log-in compares the password with `password_hash` and returns the student's `id`, answering "Incorrect email or password." for both an unknown email and a wrong password.
   * **Profile Form Validation (R5, N8):** Rejects saves if any of the 11 required inputs are missing, if the WhatsApp string violates the international numeric structure, or if a prompt is not in `prompts.md`, is used twice, or has an answer over 150 characters.
   * **Deck Retrieval Layer (R7, R8, R15):** Pulls candidate datasets by filtering out the active user's own profile, anyone they have already swiped, and anyone excluded by the mutual gender filter, dynamic sorting by schedule block overlap at runtime, and returning an empty-deck signal payload so the client browser can draw the Deck Exhausted view state if availability hits zero.
   * **Match Evaluation Engine (R11, R13):** Detects if opposite right-swipe entries exist between two IDs to confirm mutual matches, returning the match's contact details for the Screen 4 modal and the Screen 5 Buddies list (newest match first).
@@ -34,6 +35,7 @@ The application implements a mobile-first, three-tier web architecture optimized
   * **Session Rejection:** An unrecognized or cleared student ID string is rejected by the server query, causing the frontend state to return the viewport to Screen 1.
 * **Not Allowed To Do (Server Boundaries):**
   * The server is strictly prohibited from sending last names, phone numbers, social handles, gender, or gender preference inside Screen 3 deck card payloads (front or back).
+  * The server never stores or logs a plain password and never sends `password_hash` in any response (N9).
 
 ### C. The Database Layer (Isolated Persistent Storage)
 * **Core Responsibilities:**
